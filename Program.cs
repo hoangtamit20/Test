@@ -19,10 +19,6 @@ builder.Services.AddDbContext<PetShopDbContext>(options => {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddIdentityCore<NguoiDung>(options => {
-    
-});
-
 // add service jwt
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
 
