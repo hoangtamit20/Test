@@ -1,20 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0-preview.6.23329.11"/>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.10"/>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
     <!-- Kết nối đến SqlServer sử dụng entity framework -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0-preview.6.23329.4"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.10"/>
     <!-- Dùng để thao tác với migrations đến SQL Server -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0-preview.6.23329.4"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.10"/>
     <!-- Dùng để xác thực người dùng sử dụng JWT Bearer -->
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0-preview.6.23329.11"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.10"/>
     <!-- Sử dụng các dịch vụ của Identity để quản lý user, dbcontext -->
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0-preview.6.23329.11"/>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.10"/>
     <!-- Dùng để tạo, tuần tự hóa và validate JSON web token -->
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.32.2"/>
   </ItemGroup>
