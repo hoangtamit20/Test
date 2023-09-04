@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj": {}
+    "e:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj": {}
   },
   "projects": {
-    "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj": {
+    "e:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj",
+        "projectUniqueName": "e:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj",
         "projectName": "PetShop",
-        "projectPath": "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj",
+        "projectPath": "e:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj",
         "packagesPath": "C:\\Users\\hoang\\.nuget\\packages\\",
-        "outputPath": "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\obj\\",
+        "outputPath": "e:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\hoang\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -48,6 +48,10 @@
               "version": "[7.0.10, )"
             },
             "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[7.0.10, )"
+            },
+            "Microsoft.AspNetCore.Identity.UI": {
               "target": "Package",
               "version": "[7.0.10, )"
             },
