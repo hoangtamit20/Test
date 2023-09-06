@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PetShop.Models
 {
-    public class NguoiDungRequestModel
+    public class NguoiDungRegisterModel
     {
         [Required]
         public string? Name { get; set; }

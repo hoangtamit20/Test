@@ -43,6 +43,9 @@ builder.Services.AddAuthentication(options => {
     };
 });
 
+
+builder.Services.AddIdentityCore<NguoiDung>().AddEntityFrameworkStores<PetShopDbContext>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

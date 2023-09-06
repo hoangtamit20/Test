@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "e:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj": {}
+    "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj": {}
   },
   "projects": {
-    "e:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj": {
+    "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "e:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj",
+        "projectUniqueName": "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj",
         "projectName": "PetShop",
-        "projectPath": "e:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj",
+        "projectPath": "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj",
         "packagesPath": "C:\\Users\\hoang\\.nuget\\packages\\",
-        "outputPath": "e:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\obj\\",
+        "outputPath": "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\hoang\\AppData\\Roaming\\NuGet\\NuGet.Config",
