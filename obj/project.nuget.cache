@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "xsVEA41UfhliqIz1RjkgyenlXDq+vR3jTUM7Q4Cx7qpLXt+JwsXiLrsL+kwfCIg+5ibXRJyl1Kxby/VLiyMiQg==",
+  "dgSpecHash": "FSryfMaw/JgHqNvEQZFdzStzqbG3BFPrMhbEmu/3CSrb/sTJQapAShabN3za+AGL91jTKlZIE6YZjiliNSsV3A==",
   "success": true,
-  "projectFilePath": "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj",
+  "projectFilePath": "d:\\ProjectCS445\\serverapi\\PetShop.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\hoang\\.nuget\\packages\\azure.core\\1.24.0\\azure.core.1.24.0.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\azure.identity\\1.6.0\\azure.identity.1.6.0.nupkg.sha512",
@@ -83,11 +83,7 @@
     "C:\\Users\\hoang\\.nuget\\packages\\system.text.json\\7.0.0\\system.text.json.7.0.0.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\system.threading.tasks\\4.3.0\\system.threading.tasks.4.3.0.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512",
-    "C:\\Users\\hoang\\.nuget\\packages\\system.windows.extensions\\5.0.0\\system.windows.extensions.5.0.0.nupkg.sha512",
-    "C:\\Users\\hoang\\.nuget\\packages\\microsoft.netcore.app.ref\\7.0.8\\microsoft.netcore.app.ref.7.0.8.nupkg.sha512",
-    "C:\\Users\\hoang\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\7.0.8\\microsoft.windowsdesktop.app.ref.7.0.8.nupkg.sha512",
-    "C:\\Users\\hoang\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\7.0.8\\microsoft.aspnetcore.app.ref.7.0.8.nupkg.sha512",
-    "C:\\Users\\hoang\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\7.0.8\\microsoft.netcore.app.host.win-x64.7.0.8.nupkg.sha512"
+    "C:\\Users\\hoang\\.nuget\\packages\\system.windows.extensions\\5.0.0\\system.windows.extensions.5.0.0.nupkg.sha512"
   ],
   "logs": []
 }

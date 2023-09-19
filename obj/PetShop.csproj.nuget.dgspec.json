@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj": {}
+    "d:\\ProjectCS445\\serverapi\\PetShop.csproj": {}
   },
   "projects": {
-    "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj": {
+    "d:\\ProjectCS445\\serverapi\\PetShop.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj",
+        "projectUniqueName": "d:\\ProjectCS445\\serverapi\\PetShop.csproj",
         "projectName": "PetShop",
-        "projectPath": "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\PetShop.csproj",
+        "projectPath": "d:\\ProjectCS445\\serverapi\\PetShop.csproj",
         "packagesPath": "C:\\Users\\hoang\\.nuget\\packages\\",
-        "outputPath": "E:\\ProjectAPIAndNextJS\\ServerAPI\\PetShop\\obj\\",
+        "outputPath": "d:\\ProjectCS445\\serverapi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\hoang\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -34,9 +34,6 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "default"
         }
       },
       "frameworks": {
@@ -83,24 +80,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[7.0.8, 7.0.8]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.win-x64",
-              "version": "[7.0.8, 7.0.8]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[7.0.8, 7.0.8]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[7.0.8, 7.0.8]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -109,7 +88,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.100-preview.6.23330.14\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     }
