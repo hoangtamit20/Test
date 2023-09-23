@@ -5,6 +5,9 @@ using Microsoft.IdentityModel.Tokens;
 using PetShop.Configurations;
 using PetShop.Data;
 using PetShop.Entity;
+using serverapi.Repository.OrderDetailRepository;
+using serverapi.Repository.OrderRepository;
+using serverapi.Repository.PaymentRepository;
 using serverapi.Services;
 using serverapi.Services.Iservice;
 
@@ -62,7 +65,12 @@ builder.Services.AddIdentityCore<NguoiDung>().AddEntityFrameworkStores<PetShopDb
 
 
 // add service
+builder.Services.AddHttpClient();
+
 builder.Services.AddScoped<IGoogleService, GoogleService>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
 
 var app = builder.Build();
 

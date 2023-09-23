@@ -13,9 +13,9 @@ namespace serverapi.Services
     {
         private readonly HttpClient _httpClient;
 
-        public GoogleService(HttpClient httpClient)
+        public GoogleService(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClientFactory.CreateClient();
         }
 
         // Hàm này sẽ gửi một yêu cầu POST đến Google với token nhận được từ client
