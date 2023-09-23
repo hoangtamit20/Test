@@ -24,6 +24,7 @@ namespace PetShop.Services
                     new Claim("Id", nguoiDung.Id),
                     new Claim(JwtRegisteredClaimNames.Sub, nguoiDung.Email!),
                     new Claim(JwtRegisteredClaimNames.Email, nguoiDung.Email!),
+                    new Claim("ImageUrl", nguoiDung.ImageUrl!),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(JwtRegisteredClaimNames.Iat, DateTime.Now.ToUniversalTime().ToString()),
                 }),
@@ -35,6 +36,6 @@ namespace PetShop.Services
             var token = jwtTokenHandler.CreateToken(tokenDescriptor);
             var jwtToken = jwtTokenHandler.WriteToken(token);
             return jwtToken;
-        } 
+        }
     }
 }

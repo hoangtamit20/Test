@@ -5,6 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using PetShop.Configurations;
 using PetShop.Data;
 using PetShop.Entity;
+using serverapi.Services;
+using serverapi.Services.Iservice;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,10 +43,26 @@ builder.Services.AddAuthentication(options => {
         ValidateLifetime = true,
 
     };
+})
+.AddGoogle(options => {
+    options.ClientId = builder.Configuration["Authentication:Jwt:ClientId"]!;
+    options.ClientSecret = builder.Configuration["Authentication:Jwt:ClientSecret"]!;
+});
+
+
+// Configure authorization
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("User", policy => policy.RequireRole("User"));
 });
 
 
 builder.Services.AddIdentityCore<NguoiDung>().AddEntityFrameworkStores<PetShopDbContext>();
+
+
+// add service
+builder.Services.AddScoped<IGoogleService, GoogleService>();
 
 var app = builder.Build();
 
