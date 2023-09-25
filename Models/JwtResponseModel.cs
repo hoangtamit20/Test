@@ -11,6 +11,6 @@ namespace PetShop.Models
         public string? RefreshToken { get; set; }
         public object? Data { get; set; }
         public bool Result { get; set; }
-        public List<string>? Errors { get; set; }
+        public List<string> Errors { get; set; } = new List<string>();
     }
 }
