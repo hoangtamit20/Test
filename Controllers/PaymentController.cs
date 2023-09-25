@@ -68,7 +68,7 @@ namespace serverapi.Controllers
         {
             // Get the payment
             Payment payment = await _paymentRepository.GetPaymentByIdAsync(paymentId);
-            if (payment == null)
+            if (payment is null)
             {
                 return NotFound();
             }

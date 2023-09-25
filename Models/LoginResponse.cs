@@ -11,7 +11,7 @@ namespace PetShop.Models
     {
         [DisplayName("Tên đăng nhập")]
         [Required(ErrorMessage = "{0} không được để trống!")]
-        [StringLength(16, MinimumLength = 8, ErrorMessage = "{0} phải có ít nhất {2} ký tự và nhiều nhất {1} ký tự.")]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "{0} phải có ít nhất {2} ký tự và nhiều nhất {1} ký tự.")]
         public string? UserName { get; set; }
         public string? Password { get; set; }
     }

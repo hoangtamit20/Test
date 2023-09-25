@@ -25,12 +25,14 @@ namespace PetShop.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly UserManager<NguoiDung> _userManager;
-        private readonly SignInManager<NguoiDung> _signInManager;
+
+        private readonly RoleManager<IdentityRole> _roleManager;
+        // private readonly SignInManager<NguoiDung> _signInManager;
 
         private readonly IGoogleService _googleService;
         // private readonly JwtConfig _jwtConfig;
         private readonly IConfiguration _configuration;
-        public AuthenticationController(UserManager<NguoiDung> userManager, SignInManager<NguoiDung> signInManager, IConfiguration configuration, IGoogleService googleService) => (_userManager, _signInManager, _configuration, _googleService) = (userManager, signInManager, configuration, googleService);
+        public AuthenticationController(UserManager<NguoiDung> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IGoogleService googleService) => (_userManager, _roleManager, _configuration, _googleService) = (userManager, roleManager, configuration, googleService);
 
         [HttpPost("/dang-ky")]
         public async Task<IActionResult> DangKy([FromBody] NguoiDungRegisterModel nguoiDungRegisterModel)
@@ -44,17 +46,27 @@ namespace PetShop.Controllers
                     {
                         Email = nguoiDungRegisterModel.Email!,
                         UserName = nguoiDungRegisterModel.Email!,
+                        Name = nguoiDungRegisterModel.Name
                     };
                     var isCreate = await _userManager.CreateAsync(nguoiDung, nguoiDungRegisterModel.Password!);
                     if (isCreate.Succeeded)
                     {
+                        var user = await _userManager.FindByEmailAsync(nguoiDung.Email);
+                        if (user is not null)
+                        {
+                            if (!await _roleManager.RoleExistsAsync("User"))
+                            {
+                                await _roleManager.CreateAsync(new IdentityRole("User"));
+                            }
+                            await _userManager.AddToRoleAsync(user, "User");
+                        }
                         // generate token
-                        var token = JwtToken.GenerateJwtToken(nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
+                        var token = await JwtToken.GenerateJwtToken(_userManager, nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
                         return Ok(new JwtResponseModel()
                         {
                             Result = true,
-                            Token = token,
-                            Errors = null
+                            Token = token.AccessToken,
+                            RefreshToken = token.RefreshToken
                         });
                     }
                     return BadRequest(new JwtResponseModel()
@@ -100,13 +112,15 @@ namespace PetShop.Controllers
                             "Mật khẩu không đúng!"
                         }
                     });
-                var jwtToken = JwtToken.GenerateJwtToken(nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
+                var jwtToken = await JwtToken.GenerateJwtToken(_userManager, nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
 
                 return Ok(new JwtResponseModel()
                 {
                     Result = true,
-                    Token = jwtToken,
-                    Data = new LoginRequest(){
+                    Token = jwtToken.AccessToken,
+                    RefreshToken = jwtToken.RefreshToken,
+                    Data = new LoginRequest()
+                    {
                         Name = nguoiDung.Name,
                         Email = nguoiDung.Email,
                         ImageUrl = nguoiDung.ImageUrl
@@ -123,7 +137,7 @@ namespace PetShop.Controllers
         }
 
 
-        [HttpPost("google-login")]
+        [HttpPost("/google-login")]
         public async Task<IActionResult> GoogleLogin([FromHeader] string token)
         {
             // Gọi hàm GetUserInfoAsync của GoogleService để lấy thông tin người dùng từ Google
@@ -139,14 +153,24 @@ namespace PetShop.Controllers
             };
 
             // Gọi hàm GenerateJwtToken để tạo ra jwt token từ đối tượng NguoiDung
-            var jwtToken = JwtToken.GenerateJwtToken(nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
+            var jwtToken = await JwtToken.GenerateJwtToken(_userManager, nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
 
             // Trả về jwt token cho client
-            return Ok(new JwtResponseModel(){
+            return Ok(new JwtResponseModel()
+            {
                 Result = true,
                 Data = userInfo,
-                Token = jwtToken
+                Token = jwtToken.AccessToken,
+                RefreshToken = jwtToken.RefreshToken
             });
+        }
+
+
+        [HttpGet("/TestAuth")]
+        [Authorize(Roles = "Admin")]
+        public async Task<string> GetLetMe()
+        {
+            return "aldhalihdlaidhwli";
         }
     }
 }
