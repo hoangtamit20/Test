@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Y6V2U+/hcqQ2w2XTE5xDGxda8JFq1me5NnjrKGjj2ut8z6ZBD4yJ0zo0GUv4TuOcS5BU1q9qSKslZGoBXMLdSg==",
+  "dgSpecHash": "MqrIFBnKihioMG12J72CsP/goK+neu+wqDjt8k5ITJjuPt+6lhHUFpZolJJLSBFmnDt7NMufP72hXBesVxljXw==",
   "success": true,
-  "projectFilePath": "D:\\ProjectCS445\\serverapi\\PetShop.csproj",
+  "projectFilePath": "d:\\ProjectCS445\\serverapi\\PetShop.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\hoang\\.nuget\\packages\\azure.core\\1.24.0\\azure.core.1.24.0.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\azure.identity\\1.6.0\\azure.identity.1.6.0.nupkg.sha512",
@@ -14,7 +14,7 @@
     "C:\\Users\\hoang\\.nuget\\packages\\microsoft.aspnetcore.cryptography.keyderivation\\7.0.10\\microsoft.aspnetcore.cryptography.keyderivation.7.0.10.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\microsoft.aspnetcore.identity.entityframeworkcore\\7.0.10\\microsoft.aspnetcore.identity.entityframeworkcore.7.0.10.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\microsoft.aspnetcore.identity.ui\\7.0.10\\microsoft.aspnetcore.identity.ui.7.0.10.nupkg.sha512",
-    "C:\\Users\\hoang\\.nuget\\packages\\microsoft.aspnetcore.openapi\\7.0.10\\microsoft.aspnetcore.openapi.7.0.10.nupkg.sha512",
+    "C:\\Users\\hoang\\.nuget\\packages\\microsoft.aspnetcore.openapi\\7.0.11\\microsoft.aspnetcore.openapi.7.0.11.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\1.1.1\\microsoft.bcl.asyncinterfaces.1.1.1.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\microsoft.data.sqlclient\\5.0.2\\microsoft.data.sqlclient.5.0.2.nupkg.sha512",
