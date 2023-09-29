@@ -1,47 +1,48 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
-using PetShop.Entity;
+using Microsoft.EntityFrameworkCore;
+using serverapi.Enum;
 
-namespace serverapi.Entity
+namespace serverapi.Entity;
+
+[Table("Order")]
+public partial class Order
 {
-    [Table("Order")]
-    public class Order
-    {
-        [Key]
-        public int Id { get; set; }
+    [Key]
+    public int Id { get; set; }
 
-        [StringLength(500)]
-        public string? ShippingAddress { get; set; }
+    [Column(TypeName = "datetime")]
+    public DateTime OrderDate { get; set; }
 
-        [Column(TypeName = "decimal(19, 0)")]
-        public decimal? ShippingCost { get; set; }
+    [StringLength(150)]
+    public string ShipName { get; set; } = null!;
 
-        [StringLength(50)]
-        public string? PaymentMethod { get; set; }
+    [StringLength(255)]
+    public string ShipAddress { get; set; } = null!;
 
-        [StringLength(50)]
-        public string? Status { get; set; }
+    [StringLength(100)]
+    [Unicode(false)]
+    public string? ShipEmail { get; set; }
 
-        [Column(TypeName = "datetime")]
-        public DateTime CreateAt { get; set; }
+    [StringLength(11)]
+    [Unicode(false)]
+    public string ShipPhoneNumber { get; set; } = null!;
 
-        [Column(TypeName = "datetime")]
-        public DateTime? UpdateAt { get; set; }
+    // [StringLength(50)]
+    public OrderStatus Status { get; set; }
 
-        public string UserId { get; set; } = null!;
+    [StringLength(450)]
+    public string UserId { get; set; } = null!;
 
-        [ForeignKey("UserId")]
-        [InverseProperty("Orders")]
-        public virtual NguoiDung UserIdNavigation { get; set; } = null!;
+    [InverseProperty("Order")]
+    public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 
-        [InverseProperty("IdOrderNavigation")]
-        public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+    [InverseProperty("PaymentNavigation")]
+    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
-        [InverseProperty("IdOrderNavigation")]
-        public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
-    }
+    [ForeignKey("UserId")]
+    [InverseProperty("Orders")]
+    public virtual AppUser User { get; set; } = null!;
 }

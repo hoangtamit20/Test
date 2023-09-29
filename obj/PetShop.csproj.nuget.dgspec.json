@@ -1,27 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "d:\\ProjectCS445\\serverapi\\PetShop.csproj": {}
+    "D:\\ProjectCS445\\serverapi\\PetShop.csproj": {}
   },
   "projects": {
-    "d:\\ProjectCS445\\serverapi\\PetShop.csproj": {
+    "D:\\ProjectCS445\\serverapi\\PetShop.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\ProjectCS445\\serverapi\\PetShop.csproj",
+        "projectUniqueName": "D:\\ProjectCS445\\serverapi\\PetShop.csproj",
         "projectName": "PetShop",
-        "projectPath": "d:\\ProjectCS445\\serverapi\\PetShop.csproj",
+        "projectPath": "D:\\ProjectCS445\\serverapi\\PetShop.csproj",
         "packagesPath": "C:\\Users\\hoang\\.nuget\\packages\\",
-        "outputPath": "d:\\ProjectCS445\\serverapi\\obj\\",
+        "outputPath": "D:\\ProjectCS445\\serverapi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\hoang\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\hoang\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net7.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -50,7 +48,7 @@
             },
             "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[7.0.10, )"
+              "version": "[7.0.11, )"
             },
             "Microsoft.AspNetCore.Identity.UI": {
               "target": "Package",
@@ -108,7 +106,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.401\\RuntimeIdentifierGraph.json"
         }
       }
     }

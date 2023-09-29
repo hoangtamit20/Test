@@ -1,29 +1,34 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using PetShop.Entity;
 using serverapi.Entity;
 
 namespace PetShop.Data
 {
-    public class PetShopDbContext : IdentityDbContext<NguoiDung>
+    public class PetShopDbContext : IdentityDbContext<AppUser>
     {
         public PetShopDbContext(DbContextOptions<PetShopDbContext> options) : base(options)
         {
         }
 
-        #region 
-        public DbSet<Order>? Orders { get; set; }
-        public DbSet<Product>? Products { get; set; }
-        public DbSet<Brand>? Brands { get; set; }
-        public DbSet<OrderDetail>? OrderDetails { get; set; }
-        public DbSet<Category>? Categories { get; set; }
-        public DbSet<Payment>? Payments { get; set; }
+        #region dbset
+        public virtual DbSet<Contact> Contacts { get; set; } = null!;
+        public virtual DbSet<Cart> Carts { get; set; } = null!;
+        public virtual DbSet<Category> Categories { get; set; } = null!;
+        public virtual DbSet<CategoryTranslation> CategoryTranslations { get; set; } = null!;
+        public virtual DbSet<Language> Languages { get; set; } = null!;
+        public virtual DbSet<Merchant> Merchants { get; set; } = null!;
+        public virtual DbSet<Order> Orders { get; set; } = null!;
+        public virtual DbSet<OrderDetail> OrderDetails { get; set; } = null!;
+        public virtual DbSet<Payment> Payments { get; set; } = null!;
+        public virtual DbSet<PaymentDestination> PaymentDestinations { get; set; } = null!;
+        public virtual DbSet<PaymentNotification> PaymentNotifications { get; set; } = null!;
+        public virtual DbSet<PaymentTransaction> PaymentTransactions { get; set; } = null!;
+        public virtual DbSet<PaymentSignature> PaymentSignatures { get; set; } = null!;
+        public virtual DbSet<Product> Products { get; set; } = null!;
+        public virtual DbSet<ProductImage> ProductImages { get; set; } = null!;
+        public virtual DbSet<ProductTranslation> ProductTranslations { get; set; } = null!;
+        public virtual DbSet<Promotion> Promotions { get; set; } = null!;
         #endregion
-
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

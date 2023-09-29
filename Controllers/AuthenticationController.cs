@@ -1,20 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using PetShop.Configurations;
-using PetShop.Entity;
 using PetShop.Models;
 using PetShop.Services;
+using serverapi.Entity;
 using serverapi.Models;
 using serverapi.Services.Iservice;
 
@@ -24,7 +13,7 @@ namespace PetShop.Controllers
     [Route("api/[controller]")]
     public class AuthenticationController : ControllerBase
     {
-        private readonly UserManager<NguoiDung> _userManager;
+        private readonly UserManager<AppUser> _userManager;
 
         private readonly RoleManager<IdentityRole> _roleManager;
         // private readonly SignInManager<NguoiDung> _signInManager;
@@ -32,8 +21,24 @@ namespace PetShop.Controllers
         private readonly IGoogleService _googleService;
         // private readonly JwtConfig _jwtConfig;
         private readonly IConfiguration _configuration;
-        public AuthenticationController(UserManager<NguoiDung> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IGoogleService googleService) => (_userManager, _roleManager, _configuration, _googleService) = (userManager, roleManager, configuration, googleService);
+        public AuthenticationController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IGoogleService googleService) => (_userManager, _roleManager, _configuration, _googleService) = (userManager, roleManager, configuration, googleService);
 
+
+        /// <summary>
+        /// Register user
+        /// </summary>
+        /// <param name="nguoiDungRegisterModel"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// 
+        ///     POST
+        ///     {
+        ///         Name = "Võ Văn A",
+        ///         Email = "vovana@gmail.com",
+        ///         Password = "VoVanA=123"
+        ///     }
+        /// 
+        /// </remarks>
         [HttpPost("/dang-ky")]
         public async Task<IActionResult> DangKy([FromBody] NguoiDungRegisterModel nguoiDungRegisterModel)
         {
@@ -42,11 +47,11 @@ namespace PetShop.Controllers
                 var nguoiDung_Exist = await _userManager.FindByEmailAsync(nguoiDungRegisterModel.Email!);
                 if (nguoiDung_Exist == null)
                 {
-                    var nguoiDung = new NguoiDung()
+                    var nguoiDung = new AppUser()
                     {
                         Email = nguoiDungRegisterModel.Email!,
                         UserName = nguoiDungRegisterModel.Email!,
-                        Name = nguoiDungRegisterModel.Name
+                        Name = nguoiDungRegisterModel.Name!
                     };
                     var isCreate = await _userManager.CreateAsync(nguoiDung, nguoiDungRegisterModel.Password!);
                     if (isCreate.Succeeded)
@@ -86,6 +91,21 @@ namespace PetShop.Controllers
             }
             return BadRequest();
         }
+
+        /// <summary>
+        /// User login
+        /// </summary>
+        /// <param name="loginResponse"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// 
+        ///     POST
+        ///     {
+        ///         Email = "vovana@gmail.com",
+        ///         Password = "VoVanA=123"
+        ///     }
+        /// 
+        /// </remarks>
 
         [HttpPost("/dang-nhap")]
         public async Task<IActionResult> DangNhap([FromBody] LoginResponse loginResponse)
@@ -144,11 +164,11 @@ namespace PetShop.Controllers
             var userInfo = await _googleService.GetUserInfoAsync(token);
 
             // Tạo một đối tượng NguoiDung từ thông tin người dùng
-            var nguoiDung = new NguoiDung
+            var nguoiDung = new AppUser
             {
                 Id = userInfo.Email!,
                 Email = userInfo.Email,
-                Name = userInfo.Name,
+                Name = userInfo.Name!,
                 ImageUrl = userInfo.ImageUrl
             };
 
