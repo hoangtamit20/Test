@@ -1,27 +1,30 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using serverapi.Enum;
 
-namespace serverapi.Entity
+namespace serverapi.Entity;
+
+[Table("Category")]
+public partial class Category
 {
-    [Table("Category")]
-    [Index("Name", Name = "UQ__Category__737584F63F07FE8F", IsUnique = true)]
-    public class Category
-    {
-        [Key]
-        public int Id { get; set; }
+    [Key]
+    public int Id { get; set; }
 
-        [StringLength(100)]
-        public string Name { get; set; } = null!;
+    public int SortOrder { get; set; }
 
-        [StringLength(500)]
-        public string? Description { get; set; }
+    public bool IsShowHome { get; set; }
 
-        [InverseProperty("IdCategoryNavigation")]
-        public virtual ICollection<Product> Products { get; set; } = new List<Product>();
-    }
+    public int? ParentId { get; set; }
+
+    // [StringLength(20)]
+    public Status Status { get; set; }
+
+    [InverseProperty("Category")]
+    public virtual ICollection<CategoryTranslation> CategoryTranslations { get; set; } = new List<CategoryTranslation>();
+
+    [InverseProperty("Category")]
+    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

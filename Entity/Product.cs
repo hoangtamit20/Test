@@ -1,47 +1,47 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace serverapi.Entity
+namespace serverapi.Entity;
+
+[Table("Product")]
+public partial class Product
 {
-    [Table("Product")]
-    [Index("Name", Name = "UQ__Product__737584F6C7073E51", IsUnique = true)]
-    public class Product
-    {
-        [Key]
-        public int Id { get; set; }
+    [Key]
+    public int Id { get; set; }
 
-        [StringLength(100)]
-        public string? Name { get; set; }
+    [Column(TypeName = "decimal(19, 2)")]
+    public decimal Price { get; set; }
 
-        [StringLength(500)]
-        public string Description { get; set; } = null!;
+    [Column(TypeName = "decimal(19, 2)")]
+    public decimal OriginalPrice { get; set; }
 
-        [Column(TypeName = "decimal(19, 0)")]
-        public decimal? Price { get; set; }
+    public int Stock { get; set; }
 
-        public int? Quantity { get; set; }
+    public int ViewCount { get; set; }
 
-        [StringLength(500)]
-        public string? ImageUrl { get; set; }
+    [Column(TypeName = "datetime")]
+    public DateTime DateCreated { get; set; }
 
-        public int IdBrand { get; set; }
+    public bool? IsFeatured { get; set; }
 
-        public int IdCategory { get; set; }
+    public int CategoryId { get; set; }
 
-        [ForeignKey("IdBrand")]
-        [InverseProperty("Products")]
-        public virtual Brand IdBrandNavigation { get; set; } = null!;
+    [InverseProperty("Product")]
+    public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
 
-        [ForeignKey("IdCategory")]
-        [InverseProperty("Products")]
-        public virtual Category IdCategoryNavigation { get; set; } = null!;
+    [ForeignKey("CategoryId")]
+    [InverseProperty("Products")]
+    public virtual Category Category { get; set; } = null!;
 
-        [InverseProperty("IdProductNavigation")]
-        public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
-    }
+    [InverseProperty("Product")]
+    public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+
+    [InverseProperty("Product")]
+    public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
+
+    [InverseProperty("Product")]
+    public virtual ICollection<ProductTranslation> ProductTranslations { get; set; } = new List<ProductTranslation>();
 }

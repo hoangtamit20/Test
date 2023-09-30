@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -7,7 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PetShop.Configurations;
 using PetShop.Data;
-using PetShop.Entity;
 using serverapi.Entity;
 using serverapi.Repository.OrderDetailRepository;
 using serverapi.Repository.OrderRepository;
@@ -15,7 +15,6 @@ using serverapi.Repository.PaymentRepository;
 using serverapi.Services;
 using serverapi.Services.Iservice;
 using serverapi.Validator;
-using Swashbuckle.AspNetCore.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +52,20 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
+    options.SwaggerDoc("v1", new OpenApiInfo()
+    {
+        Version = "v1",
+        Title = "Petshop service api",
+        Description = "Sample .NET api by ",
+        Contact = new OpenApiContact()
+        {
+            Name = "Hoang Trong Tam",
+            Url = new Uri("https://www.youtube.com")
+        }
+    });
+    var xmlFileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var path = Path.Combine(AppContext.BaseDirectory, xmlFileName);
+    options.IncludeXmlComments(path);
 });
 // add PetShopDbContext
 builder.Services.AddDbContext<PetShopDbContext>(options =>
@@ -102,7 +115,7 @@ builder.Services.AddAuthorization(
 );
 
 
-builder.Services.AddIdentityCore<NguoiDung>()
+builder.Services.AddIdentityCore<AppUser>()
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<PetShopDbContext>();
 
