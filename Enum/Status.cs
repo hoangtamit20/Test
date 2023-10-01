@@ -5,9 +5,18 @@ using System.Threading.Tasks;
 
 namespace serverapi.Enum
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public enum Status
     {
+        /// <summary>
+        /// 
+        /// </summary>
         Valid,
+        /// <summary>
+        /// 
+        /// </summary>
         InValid
     }
 }

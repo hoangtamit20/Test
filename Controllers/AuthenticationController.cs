@@ -9,6 +9,9 @@ using serverapi.Services.Iservice;
 
 namespace PetShop.Controllers
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class AuthenticationController : ControllerBase
@@ -21,6 +24,13 @@ namespace PetShop.Controllers
         private readonly IGoogleService _googleService;
         // private readonly JwtConfig _jwtConfig;
         private readonly IConfiguration _configuration;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <param name="roleManager"></param>
+        /// <param name="configuration"></param>
+        /// <param name="googleService"></param>
         public AuthenticationController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IGoogleService googleService) => (_userManager, _roleManager, _configuration, _googleService) = (userManager, roleManager, configuration, googleService);
 
 
@@ -157,6 +167,11 @@ namespace PetShop.Controllers
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         [HttpPost("/google-login")]
         public async Task<IActionResult> GoogleLogin([FromHeader] string token)
         {
@@ -186,9 +201,13 @@ namespace PetShop.Controllers
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("/TestAuth")]
         [Authorize(Roles = "Admin")]
-        public async Task<string> GetLetMe()
+        public string GetLetMe()
         {
             return "aldhalihdlaidhwli";
         }
