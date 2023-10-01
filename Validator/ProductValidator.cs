@@ -7,6 +7,9 @@ using serverapi.Entity;
 
 namespace serverapi.Validator
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class ProductValidator : AbstractValidator<Product>
     {
         // public ProductValidator()

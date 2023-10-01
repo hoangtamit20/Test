@@ -7,6 +7,9 @@ using serverapi.Repository.PaymentRepository;
 
 namespace serverapi.Controllers
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class PaymentController : ControllerBase

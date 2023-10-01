@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\ProjectCS445\\serverapi\\PetShop.csproj": {}
+    "d:\\ProjectCS445\\serverapi\\PetShop.csproj": {}
   },
   "projects": {
-    "D:\\ProjectCS445\\serverapi\\PetShop.csproj": {
+    "d:\\ProjectCS445\\serverapi\\PetShop.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\ProjectCS445\\serverapi\\PetShop.csproj",
+        "projectUniqueName": "d:\\ProjectCS445\\serverapi\\PetShop.csproj",
         "projectName": "PetShop",
-        "projectPath": "D:\\ProjectCS445\\serverapi\\PetShop.csproj",
+        "projectPath": "d:\\ProjectCS445\\serverapi\\PetShop.csproj",
         "packagesPath": "C:\\Users\\hoang\\.nuget\\packages\\",
-        "outputPath": "D:\\ProjectCS445\\serverapi\\obj\\",
+        "outputPath": "d:\\ProjectCS445\\serverapi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\hoang\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -42,6 +42,14 @@
               "target": "Package",
               "version": "[11.7.1, )"
             },
+            "Mapster": {
+              "target": "Package",
+              "version": "[7.4.0, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[12.1.1, )"
+            },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[7.0.10, )"
@@ -69,6 +77,10 @@
             "Microsoft.EntityFrameworkCore.Tools": {
               "target": "Package",
               "version": "[7.0.10, )"
+            },
+            "MySql.Data.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.22, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",

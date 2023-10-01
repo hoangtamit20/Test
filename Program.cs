@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PetShop.Configurations;
 using PetShop.Data;
+using serverapi.Commands.Merchants;
 using serverapi.Entity;
 using serverapi.Repository.OrderDetailRepository;
 using serverapi.Repository.OrderRepository;
@@ -131,6 +132,11 @@ builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
 
 // add validator service
 builder.Services.AddScoped<IValidator<Product>, ProductValidator>();
+
+// add MediatR
+builder.Services.AddMediatR(options => {
+    options.RegisterServicesFromAssembly(typeof(CreateMerchant).Assembly);
+});
 
 
 var app = builder.Build();

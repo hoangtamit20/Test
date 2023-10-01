@@ -9,15 +9,31 @@ using serverapi.Services.Iservice;
 
 namespace serverapi.Services
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class GoogleService : IGoogleService
     {
+        /// <summary>
+        /// 
+        /// </summary>
         private readonly HttpClient _httpClient;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpClientFactory"></param>
         public GoogleService(IHttpClientFactory httpClientFactory)
         {
             _httpClient = httpClientFactory.CreateClient();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         // Hàm này sẽ gửi một yêu cầu POST đến Google với token nhận được từ client
         // và trả về một đối tượng GoogleResponseModel chứa thông tin người dùng
         public async Task<GoogleResponseModel> GetUserInfoAsync(string token)

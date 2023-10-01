@@ -4,31 +4,110 @@ using serverapi.Entity;
 
 namespace PetShop.Data
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class PetShopDbContext : IdentityDbContext<AppUser>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="options"></param>
         public PetShopDbContext(DbContextOptions<PetShopDbContext> options) : base(options)
         {
         }
 
         #region dbset
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<Contact> Contacts { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<Cart> Carts { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<Category> Categories { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<CategoryTranslation> CategoryTranslations { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<Language> Languages { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<Merchant> Merchants { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<Order> Orders { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<OrderDetail> OrderDetails { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<Payment> Payments { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<PaymentDestination> PaymentDestinations { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<PaymentNotification> PaymentNotifications { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<PaymentTransaction> PaymentTransactions { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<PaymentSignature> PaymentSignatures { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<Product> Products { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<ProductImage> ProductImages { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<ProductTranslation> ProductTranslations { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<Promotion> Promotions { get; set; } = null!;
         #endregion
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="builder"></param>
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -41,6 +120,11 @@ namespace PetShop.Data
 
             // builder.Entity<OrderDetail>(entity => entity.HasKey(or => new {or.ProductId, or.OrderId}));
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="optionsBuilder"></param>
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

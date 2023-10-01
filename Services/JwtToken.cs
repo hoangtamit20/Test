@@ -13,8 +13,15 @@ using serverapi.Models;
 
 namespace PetShop.Services
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class JwtToken
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 
         public static string GenerateRefreshToken()
         {
@@ -25,6 +32,14 @@ namespace PetShop.Services
             }
             return Convert.ToBase64String(random);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <param name="user"></param>
+        /// <param name="secretKey"></param>
+        /// <returns></returns>
 
         public static async Task<TokenModel> GenerateJwtToken(UserManager<AppUser> userManager, AppUser user, string secretKey)
         {
