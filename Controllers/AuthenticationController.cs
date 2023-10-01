@@ -59,6 +59,7 @@ namespace PetShop.Controllers
                 {
                     var nguoiDung = new AppUser()
                     {
+                        CreateDate = DateTime.Now,
                         Email = nguoiDungRegisterModel.Email!,
                         UserName = nguoiDungRegisterModel.Email!,
                         Name = nguoiDungRegisterModel.Name!

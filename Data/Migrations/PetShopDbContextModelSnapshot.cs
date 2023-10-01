@@ -17,7 +17,7 @@ namespace PetShop.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.10")
+                .HasAnnotation("ProductVersion", "7.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -155,7 +155,7 @@ namespace PetShop.Data.Migrations
                     b.ToTable("UserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("PetShop.Entity.NguoiDung", b =>
+            modelBuilder.Entity("serverapi.Entity.AppUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -164,14 +164,18 @@ namespace PetShop.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -190,7 +194,9 @@ namespace PetShop.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -232,7 +238,7 @@ namespace PetShop.Data.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("serverapi.Entity.Brand", b =>
+            modelBuilder.Entity("serverapi.Entity.Cart", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -240,21 +246,30 @@ namespace PetShop.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime");
 
-                    b.Property<string>("Name")
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(19, 2)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "Name" }, "UQ__Brand__737584F6F8896A38")
-                        .IsUnique();
+                    b.HasIndex("ProductId");
 
-                    b.ToTable("Brand");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Cart");
                 });
 
             modelBuilder.Entity("serverapi.Entity.Category", b =>
@@ -265,21 +280,157 @@ namespace PetShop.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                    b.Property<bool>("IsShowHome")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "Name" }, "UQ__Category__737584F63F07FE8F")
-                        .IsUnique();
-
                     b.ToTable("Category");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.CategoryTranslation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LanguageId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SeoAlias")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("SeoDescription")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("SeoTitle")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("LanguageId");
+
+                    b.ToTable("CategoryTranslation");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.Contact", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(11)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(11)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Contact");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.Language", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Language");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.Merchant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool?>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MerchantIpnUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("MerchantName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("MerchantReturnUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("MerchantWebLink")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("SecretKey")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Merchant");
                 });
 
             modelBuilder.Entity("serverapi.Entity.Order", b =>
@@ -290,29 +441,36 @@ namespace PetShop.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreateAt")
+                    b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime");
 
-                    b.Property<string>("PaymentMethod")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<string>("ShipAddress")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("ShippingAddress")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                    b.Property<string>("ShipEmail")
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
 
-                    b.Property<decimal?>("ShippingCost")
-                        .HasColumnType("decimal(19, 0)");
+                    b.Property<string>("ShipName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
-                    b.Property<string>("Status")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<string>("ShipPhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(11)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(11)");
 
-                    b.Property<DateTime?>("UpdateAt")
-                        .HasColumnType("datetime");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<string>("UserId")
                         .IsRequired()
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -330,14 +488,11 @@ namespace PetShop.Data.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Quantity")
+                    b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<decimal?>("Subtotal")
-                        .HasColumnType("decimal(19, 0)");
-
-                    b.Property<decimal?>("UnitPrice")
-                        .HasColumnType("decimal(19, 0)");
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("decimal(19, 2)");
 
                     b.HasKey("OrderId", "ProductId");
 
@@ -354,31 +509,232 @@ namespace PetShop.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal?>("Amount")
-                        .HasColumnType("decimal(19, 0)");
-
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime");
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PaymentMethod")
+                    b.Property<string>("Content")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("Currency")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("ExpireDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("MerchantId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PaidAmount")
+                        .HasColumnType("decimal(19, 2)");
+
+                    b.Property<DateTime?>("PaymentDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("PaymentDestinationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentLanguage")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("PaymentLastMessage")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("PaymentRefId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime");
+                    b.Property<string>("PaymentStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal?>("RequiredAmount")
+                        .HasColumnType("decimal(19, 2)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
+                    b.HasIndex("MerchantId");
+
+                    b.HasIndex("PaymentDestinationId");
+
+                    b.HasIndex("PaymentId");
 
                     b.ToTable("Payment");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.PaymentDestination", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreateAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("CreateBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("DesLogo")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("DesName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("DesShortName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("DesSortIndex")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("LastUpdateBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("PaymentDestination");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.PaymentNotification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("NotificationAmount")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("NotificationContent")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("NotificationDate")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("NotificationMessage")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("NotificationResponseDate")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("NotificationSignature")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("NotificationStatus")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("PaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentRefId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("PaymentNotification");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.PaymentSignature", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsValid")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SignAlgo")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("SignDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("SignOwn")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("SignValue")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("PaymentSignature");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.PaymentTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("TranAmount")
+                        .HasColumnType("decimal(19, 2)");
+
+                    b.Property<DateTime?>("TranDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("TranMessage")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("TranPayload")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("TranStatus")
+                        .HasMaxLength(10)
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("PaymentTransaction");
                 });
 
             modelBuilder.Entity("serverapi.Entity.Product", b =>
@@ -389,42 +745,167 @@ namespace PetShop.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("IdBrand")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
-                    b.Property<int>("IdCategory")
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool?>("IsFeatured")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("OriginalPrice")
+                        .HasColumnType("decimal(19, 2)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(19, 2)");
+
+                    b.Property<int>("Stock")
                         .HasColumnType("int");
 
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<decimal?>("Price")
-                        .HasColumnType("decimal(19, 0)");
-
-                    b.Property<int?>("Quantity")
+                    b.Property<int>("ViewCount")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IdBrand");
-
-                    b.HasIndex("IdCategory");
-
-                    b.HasIndex(new[] { "Name" }, "UQ__Product__737584F6C7073E51")
-                        .IsUnique()
-                        .HasFilter("[Name] IS NOT NULL");
+                    b.HasIndex("CategoryId");
 
                     b.ToTable("Product");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.ProductImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("FileSize")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImagePath")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int>("IsDefault")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductImage");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.ProductTranslation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("LanguageId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SeoAlias")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("SeoDescription")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("SeoTitle")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LanguageId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductTranslation");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.Promotion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("ApplyForAll")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("DiscountAmount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DiscountPercent")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FromDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("ProductCategoryIds")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("ProductIds")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("ToDate")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Promotion");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -438,7 +919,7 @@ namespace PetShop.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("PetShop.Entity.NguoiDung", null)
+                    b.HasOne("serverapi.Entity.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -447,7 +928,7 @@ namespace PetShop.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("PetShop.Entity.NguoiDung", null)
+                    b.HasOne("serverapi.Entity.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -462,7 +943,7 @@ namespace PetShop.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("PetShop.Entity.NguoiDung", null)
+                    b.HasOne("serverapi.Entity.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -471,86 +952,215 @@ namespace PetShop.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("PetShop.Entity.NguoiDung", null)
+                    b.HasOne("serverapi.Entity.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("serverapi.Entity.Cart", b =>
+                {
+                    b.HasOne("serverapi.Entity.Product", "Product")
+                        .WithMany("Carts")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("serverapi.Entity.AppUser", "User")
+                        .WithMany("Carts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.CategoryTranslation", b =>
+                {
+                    b.HasOne("serverapi.Entity.Category", "Category")
+                        .WithMany("CategoryTranslations")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("serverapi.Entity.Language", "Language")
+                        .WithMany("CategoryTranslations")
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Language");
+                });
+
             modelBuilder.Entity("serverapi.Entity.Order", b =>
                 {
-                    b.HasOne("PetShop.Entity.NguoiDung", "UserIdNavigation")
+                    b.HasOne("serverapi.Entity.AppUser", "User")
                         .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("UserIdNavigation");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("serverapi.Entity.OrderDetail", b =>
                 {
-                    b.HasOne("serverapi.Entity.Order", "IdOrderNavigation")
+                    b.HasOne("serverapi.Entity.Order", "Order")
                         .WithMany("OrderDetails")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("serverapi.Entity.Product", "IdProductNavigation")
+                    b.HasOne("serverapi.Entity.Product", "Product")
                         .WithMany("OrderDetails")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("IdOrderNavigation");
+                    b.Navigation("Order");
 
-                    b.Navigation("IdProductNavigation");
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("serverapi.Entity.Payment", b =>
                 {
-                    b.HasOne("serverapi.Entity.Order", "IdOrderNavigation")
+                    b.HasOne("serverapi.Entity.Merchant", "Merchant")
                         .WithMany("Payments")
-                        .HasForeignKey("OrderId")
+                        .HasForeignKey("MerchantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("IdOrderNavigation");
+                    b.HasOne("serverapi.Entity.PaymentDestination", "PaymentDestination")
+                        .WithMany("Payments")
+                        .HasForeignKey("PaymentDestinationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("serverapi.Entity.Order", "PaymentNavigation")
+                        .WithMany("Payments")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Merchant");
+
+                    b.Navigation("PaymentDestination");
+
+                    b.Navigation("PaymentNavigation");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.PaymentDestination", b =>
+                {
+                    b.HasOne("serverapi.Entity.PaymentDestination", "Parent")
+                        .WithMany("InverseParent")
+                        .HasForeignKey("ParentId");
+
+                    b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.PaymentNotification", b =>
+                {
+                    b.HasOne("serverapi.Entity.Payment", "Payment")
+                        .WithMany("PaymentNotifications")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Payment");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.PaymentSignature", b =>
+                {
+                    b.HasOne("serverapi.Entity.Payment", "Payment")
+                        .WithMany("PaymentSignatures")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Payment");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.PaymentTransaction", b =>
+                {
+                    b.HasOne("serverapi.Entity.Payment", "Payment")
+                        .WithMany("PaymentTransactions")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("serverapi.Entity.Product", b =>
                 {
-                    b.HasOne("serverapi.Entity.Brand", "IdBrandNavigation")
+                    b.HasOne("serverapi.Entity.Category", "Category")
                         .WithMany("Products")
-                        .HasForeignKey("IdBrand")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("serverapi.Entity.Category", "IdCategoryNavigation")
-                        .WithMany("Products")
-                        .HasForeignKey("IdCategory")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("IdBrandNavigation");
-
-                    b.Navigation("IdCategoryNavigation");
+                    b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("PetShop.Entity.NguoiDung", b =>
+            modelBuilder.Entity("serverapi.Entity.ProductImage", b =>
                 {
+                    b.HasOne("serverapi.Entity.Product", "Product")
+                        .WithMany("ProductImages")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.ProductTranslation", b =>
+                {
+                    b.HasOne("serverapi.Entity.Language", "Language")
+                        .WithMany("ProductTranslations")
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("serverapi.Entity.Product", "Product")
+                        .WithMany("ProductTranslations")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Language");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.AppUser", b =>
+                {
+                    b.Navigation("Carts");
+
                     b.Navigation("Orders");
-                });
-
-            modelBuilder.Entity("serverapi.Entity.Brand", b =>
-                {
-                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("serverapi.Entity.Category", b =>
                 {
+                    b.Navigation("CategoryTranslations");
+
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.Language", b =>
+                {
+                    b.Navigation("CategoryTranslations");
+
+                    b.Navigation("ProductTranslations");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.Merchant", b =>
+                {
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("serverapi.Entity.Order", b =>
@@ -560,9 +1170,31 @@ namespace PetShop.Data.Migrations
                     b.Navigation("Payments");
                 });
 
+            modelBuilder.Entity("serverapi.Entity.Payment", b =>
+                {
+                    b.Navigation("PaymentNotifications");
+
+                    b.Navigation("PaymentSignatures");
+
+                    b.Navigation("PaymentTransactions");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.PaymentDestination", b =>
+                {
+                    b.Navigation("InverseParent");
+
+                    b.Navigation("Payments");
+                });
+
             modelBuilder.Entity("serverapi.Entity.Product", b =>
                 {
+                    b.Navigation("Carts");
+
                     b.Navigation("OrderDetails");
+
+                    b.Navigation("ProductImages");
+
+                    b.Navigation("ProductTranslations");
                 });
 #pragma warning restore 612, 618
         }

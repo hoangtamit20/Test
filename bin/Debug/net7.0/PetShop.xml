@@ -1,0 +1,1571 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PetShop</name>
+    </assembly>
+    <members>
+        <member name="T:PetShop.Controllers.AuthenticationController">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:PetShop.Controllers.AuthenticationController.#ctor(Microsoft.AspNetCore.Identity.UserManager{serverapi.Entity.AppUser},Microsoft.AspNetCore.Identity.RoleManager{Microsoft.AspNetCore.Identity.IdentityRole},Microsoft.Extensions.Configuration.IConfiguration,serverapi.Services.Iservice.IGoogleService)">
+            <summary>
+            
+            </summary>
+            <param name="userManager"></param>
+            <param name="roleManager"></param>
+            <param name="configuration"></param>
+            <param name="googleService"></param>
+        </member>
+        <member name="M:PetShop.Controllers.AuthenticationController.DangKy(PetShop.Models.NguoiDungRegisterModel)">
+            <summary>
+            Register user
+            </summary>
+            <param name="nguoiDungRegisterModel"></param>
+            <returns></returns>
+            <remarks>
+            
+                POST
+                {
+                    Name = "Võ Văn A",
+                    Email = "vovana@gmail.com",
+                    Password = "VoVanA=123"
+                }
+            
+            </remarks>
+        </member>
+        <member name="M:PetShop.Controllers.AuthenticationController.DangNhap(PetShop.Models.LoginResponse)">
+            <summary>
+            User login
+            </summary>
+            <param name="loginResponse"></param>
+            <returns></returns>
+            <remarks>
+            
+                POST
+                {
+                    Email = "vovana@gmail.com",
+                    Password = "VoVanA=123"
+                }
+            
+            </remarks>
+        </member>
+        <member name="M:PetShop.Controllers.AuthenticationController.GoogleLogin(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="token"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PetShop.Controllers.AuthenticationController.GetLetMe">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:PetShop.Data.Migrations.InitDb">
+            <inheritdoc />
+        </member>
+        <member name="M:PetShop.Data.Migrations.InitDb.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PetShop.Data.Migrations.InitDb.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PetShop.Data.Migrations.InitDb.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:PetShop.Data.PetShopDbContext">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:PetShop.Data.PetShopDbContext.#ctor(Microsoft.EntityFrameworkCore.DbContextOptions{PetShop.Data.PetShopDbContext})">
+            <summary>
+            
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.Contacts">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.Carts">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.Categories">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.CategoryTranslations">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.Languages">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.Merchants">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.Orders">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.OrderDetails">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.Payments">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.PaymentDestinations">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.PaymentNotifications">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.PaymentTransactions">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.PaymentSignatures">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.Products">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.ProductImages">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.ProductTranslations">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:PetShop.Data.PetShopDbContext.Promotions">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:PetShop.Data.PetShopDbContext.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <summary>
+            
+            </summary>
+            <param name="builder"></param>
+        </member>
+        <member name="M:PetShop.Data.PetShopDbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)">
+            <summary>
+            
+            </summary>
+            <param name="optionsBuilder"></param>
+        </member>
+        <member name="T:PetShop.Services.JwtToken">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:PetShop.Services.JwtToken.GenerateRefreshToken">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:PetShop.Services.JwtToken.GenerateJwtToken(Microsoft.AspNetCore.Identity.UserManager{serverapi.Entity.AppUser},serverapi.Entity.AppUser,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="userManager"></param>
+            <param name="user"></param>
+            <param name="secretKey"></param>
+            <returns></returns>
+        </member>
+        <member name="T:serverapi.Base.BaseError">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Base.BaseError.Code">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Base.BaseError.Message">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Base.BaseResult">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Base.BaseResult.Result">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Base.BaseResult.Message">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Base.BaseResult.Errors">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:serverapi.Base.BaseResult.Set(System.Boolean,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="result"></param>
+            <param name="message"></param>
+        </member>
+        <member name="T:serverapi.Base.BaseResultWithData`1">
+            <summary>
+            
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:serverapi.Base.BaseResultWithData`1.Data">
+            <summary>
+            Response data to client
+            </summary>
+        </member>
+        <member name="M:serverapi.Base.BaseResultWithData`1.Set(System.Boolean,System.String,`0)">
+            <summary>
+            
+            </summary>
+            <param name="result"></param>
+            <param name="message"></param>
+            <param name="data"></param>
+        </member>
+        <member name="T:serverapi.Commands.Merchants.CreateMerchant">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Commands.Merchants.CreateMerchant.MerchantName">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Commands.Merchants.CreateMerchant.MerchantWebLink">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Commands.Merchants.CreateMerchant.MerchantIpnUrl">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Commands.Merchants.CreateMerchant.MerchantReturnUrl">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Commands.Payments.CreatePayment">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Commands.Payments.CreatePayment.Currency">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Commands.Payments.CreatePayment.PaymentRefId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Commands.Payments.CreatePayment.RequiredAmount">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Commands.Payments.CreatePayment.PaymentDate">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Commands.Payments.CreatePayment.ExpireDate">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Commands.Payments.CreatePayment.PaymentLanguage">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Commands.Payments.CreatePayment.MerchantId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Commands.Payments.CreatePayment.PaymentDestinationId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Commands.Payments.CreatePayment.PaymentId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Common.BaseAuditableEntity">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Common.BaseAuditableEntity.CreateBy">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Common.BaseAuditableEntity.CreateAt">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Common.BaseAuditableEntity.LastUpdateBy">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Common.BaseAuditableEntity.LastUpdateAt">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Contants.MessageContants">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Contants.MessageContants.OK">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Contants.MessageContants.Cancel">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Contants.MessageContants.Error">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Contants.MessageContants.NotFound">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Contants.MessageContants.Exception">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Controllers.MerchantController">
+            <summary>
+            CRUD api merchant
+            </summary>
+        </member>
+        <member name="M:serverapi.Controllers.MerchantController.#ctor(MediatR.IMediator)">
+            <summary>
+            
+            </summary>
+            <param name="mediator"></param>
+        </member>
+        <member name="M:serverapi.Controllers.MerchantController.Create(serverapi.Commands.Merchants.CreateMerchant)">
+            <summary>
+            Create merchant
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+            <remarks>
+            
+                POST /merchants
+                {
+                    "MerchantName" : "Website bán hàng A",
+                    "MerchantWebLink" : "https://webbanhang.com",
+                    "MerchantIpnUrl" : "https://webbanhang.com/ipn",
+                    "MerchantReturnUrl" : "https://webbanhang.com/payment/return"
+                }
+            
+            </remarks>
+        </member>
+        <member name="T:serverapi.Controllers.PaymentController">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Dtos.Merchants.MerchantDto">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Dtos.Merchants.MerchantDto.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Dtos.Merchants.MerchantDto.MerchantName">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Dtos.Merchants.MerchantDto.MerchantWebLink">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Dtos.Merchants.MerchantDto.MerchantIpnUrl">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Dtos.Merchants.MerchantDto.MerchantReturnUrl">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Dtos.Merchants.MerchantDto.IsActive">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Dtos.Payments.PaymentLinkDto">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Dtos.Payments.PaymentLinkDto.PaymentId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Dtos.Payments.PaymentLinkDto.PaymentLink">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.AppUser">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.AppUser.Name">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.AppUser.Address">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.AppUser.DateOfBirth">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.AppUser.ImageUrl">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.AppUser.CreateDate">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.AppUser.Carts">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.AppUser.Orders">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.Cart">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Cart.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Cart.Quantity">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Cart.Price">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Cart.DateCreated">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Cart.UserId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Cart.ProductId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Cart.Product">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Cart.User">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.Category">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Category.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Category.SortOrder">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Category.IsShowHome">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Category.ParentId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Category.Status">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Category.CategoryTranslations">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Category.Products">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.CategoryTranslation">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.CategoryTranslation.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.CategoryTranslation.Name">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.CategoryTranslation.SeoDescription">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.CategoryTranslation.SeoTitle">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.CategoryTranslation.SeoAlias">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.CategoryTranslation.LanguageId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.CategoryTranslation.CategoryId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.CategoryTranslation.Category">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.CategoryTranslation.Language">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.Contact">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Contact.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Contact.Name">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Contact.Email">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Contact.PhoneNumber">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Contact.Message">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Contact.Status">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.Language">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Language.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Language.Name">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Language.IsDefault">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Language.CategoryTranslations">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Language.ProductTranslations">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.Merchant">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Merchant.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Merchant.MerchantName">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Merchant.MerchantWebLink">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Merchant.MerchantIpnUrl">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Merchant.MerchantReturnUrl">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Merchant.SecretKey">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Merchant.IsActive">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Merchant.Payments">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.Order">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Order.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Order.OrderDate">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Order.ShipName">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Order.ShipAddress">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Order.ShipEmail">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Order.ShipPhoneNumber">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Order.Status">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Order.UserId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Order.OrderDetails">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Order.Payments">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Order.User">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.OrderDetail">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.OrderDetail.OrderId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.OrderDetail.ProductId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.OrderDetail.Quantity">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.OrderDetail.SubTotal">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.OrderDetail.Order">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.OrderDetail.Product">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.Payment">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.Content">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.Currency">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.PaymentRefId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.RequiredAmount">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.PaymentDate">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.ExpireDate">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.PaymentLanguage">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.PaidAmount">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.PaymentStatus">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.PaymentLastMessage">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.MerchantId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.PaymentDestinationId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.PaymentId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.Merchant">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.PaymentDestination">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.PaymentNavigation">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.PaymentNotifications">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.PaymentSignatures">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Payment.PaymentTransactions">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.PaymentDestination">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentDestination.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentDestination.DesLogo">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentDestination.DesShortName">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentDestination.DesName">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentDestination.DesSortIndex">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentDestination.ParentId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentDestination.IsActive">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentDestination.InverseParent">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentDestination.Parent">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentDestination.Payments">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.PaymentNotification">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentNotification.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentNotification.PaymentRefId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentNotification.NotificationDate">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentNotification.NotificationAmount">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentNotification.NotificationContent">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentNotification.NotificationMessage">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentNotification.NotificationSignature">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentNotification.NotificationStatus">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentNotification.NotificationResponseDate">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentNotification.PaymentId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentNotification.Payment">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.PaymentSignature">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentSignature.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentSignature.SignValue">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentSignature.SignAlgo">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentSignature.SignDate">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentSignature.SignOwn">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentSignature.IsValid">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentSignature.PaymentId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentSignature.Payment">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.PaymentTransaction">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentTransaction.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentTransaction.TranMessage">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentTransaction.TranPayload">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentTransaction.TranStatus">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentTransaction.TranAmount">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentTransaction.TranDate">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentTransaction.PaymentId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.PaymentTransaction.Payment">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.Product">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Product.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Product.Price">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Product.OriginalPrice">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Product.Stock">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Product.ViewCount">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Product.DateCreated">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Product.IsFeatured">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Product.CategoryId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Product.Carts">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Product.Category">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Product.OrderDetails">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Product.ProductImages">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Product.ProductTranslations">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.ProductImage">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductImage.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductImage.ImagePath">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductImage.Caption">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductImage.IsDefault">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductImage.DateCreated">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductImage.SortOrder">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductImage.FileSize">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductImage.ProductId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductImage.Product">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.ProductTranslation">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductTranslation.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductTranslation.Name">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductTranslation.Description">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductTranslation.Details">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductTranslation.SeoDescription">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductTranslation.SeoTitle">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductTranslation.SeoAlias">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductTranslation.LanguageId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductTranslation.ProductId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductTranslation.Language">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.ProductTranslation.Product">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Entity.Promotion">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Promotion.Id">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Promotion.Name">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Promotion.FromDate">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Promotion.ToDate">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Promotion.ApplyForAll">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Promotion.DiscountPercent">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Promotion.DiscountAmount">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Promotion.ProductIds">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Promotion.ProductCategoryIds">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Entity.Promotion.Status">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Enum.OrderStatus">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:serverapi.Enum.OrderStatus.InProgress">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:serverapi.Enum.OrderStatus.Confirmed">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:serverapi.Enum.OrderStatus.Shipping">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:serverapi.Enum.OrderStatus.Success">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:serverapi.Enum.OrderStatus.Canceled">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Enum.Status">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:serverapi.Enum.Status.Valid">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:serverapi.Enum.Status.InValid">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Enum.TransactionStatus">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:serverapi.Enum.TransactionStatus.Success">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:serverapi.Enum.TransactionStatus.Failed">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Handlers.MerchantHandlers.CreateMerchantHandler">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:serverapi.Handlers.MerchantHandlers.CreateMerchantHandler.#ctor(Microsoft.AspNetCore.Identity.UserManager{serverapi.Entity.AppUser},PetShop.Data.PetShopDbContext)">
+            <summary>
+            
+            </summary>
+            <param name="userManager"></param>
+            <param name="dbContext"></param>
+        </member>
+        <member name="M:serverapi.Handlers.MerchantHandlers.CreateMerchantHandler.Handle(serverapi.Commands.Merchants.CreateMerchant,System.Threading.CancellationToken)">
+            <summary>
+            
+            </summary>
+            <param name="request"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+            <exception cref="T:System.NotImplementedException"></exception>
+        </member>
+        <member name="T:serverapi.Repository.MerchantRepository.IMerchantRepository">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:serverapi.Repository.MerchantRepository.IMerchantRepository.GetMerchantsAsync">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:serverapi.Repository.MerchantRepository.IMerchantRepository.GetMerchantById(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="T:serverapi.Services.GoogleService">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:serverapi.Services.GoogleService._httpClient">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:serverapi.Services.GoogleService.#ctor(System.Net.Http.IHttpClientFactory)">
+            <summary>
+            
+            </summary>
+            <param name="httpClientFactory"></param>
+        </member>
+        <member name="M:serverapi.Services.GoogleService.GetUserInfoAsync(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="token"></param>
+            <returns></returns>
+            <exception cref="T:System.Exception"></exception>
+        </member>
+        <member name="T:serverapi.Services.PaymentService.VnPay.Config.VnPayConfig">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Services.PaymentService.VnPay.Config.VnPayConfig.ConfigName">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Services.PaymentService.VnPay.Config.VnPayConfig.TmnCode">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Services.PaymentService.VnPay.Config.VnPayConfig.HashSecret">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Services.PaymentService.VnPay.Config.VnPayConfig.ReturnUrl">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:serverapi.Services.PaymentService.VnPay.Config.VnPayConfig.PaymentUrl">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Validator.PaymentValidator">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:serverapi.Validator.ProductValidator">
+            <summary>
+            
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "08XAukj93U0KiJsl1WXShSjY+dtMpmG1PfCUqH96pj9gtj/BdB/hGyiw4/wyHiuH2xvkC0MA1axXP6LX4O5Q4Q==",
+  "dgSpecHash": "2mAXGOqULLSQNAkh/NrCF8RjQqYlZZOvTNXOhyPbtJtA5skFgYKHhkh1Jjrk60L1SFT77v1G9jNvIbDYatT0aA==",
   "success": true,
   "projectFilePath": "d:\\ProjectCS445\\serverapi\\PetShop.csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,10 @@
     "C:\\Users\\hoang\\.nuget\\packages\\azure.identity\\1.6.0\\azure.identity.1.6.0.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\fluentvalidation\\11.7.1\\fluentvalidation.11.7.1.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
+    "C:\\Users\\hoang\\.nuget\\packages\\mapster\\7.4.0\\mapster.7.4.0.nupkg.sha512",
+    "C:\\Users\\hoang\\.nuget\\packages\\mapster.core\\1.2.1\\mapster.core.1.2.1.nupkg.sha512",
+    "C:\\Users\\hoang\\.nuget\\packages\\mediatr\\12.1.1\\mediatr.12.1.1.nupkg.sha512",
+    "C:\\Users\\hoang\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\microsoft.aspnetcore.authentication.google\\7.0.11\\microsoft.aspnetcore.authentication.google.7.0.11.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\7.0.10\\microsoft.aspnetcore.authentication.jwtbearer.7.0.10.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\microsoft.aspnetcore.cryptography.internal\\7.0.11\\microsoft.aspnetcore.cryptography.internal.7.0.11.nupkg.sha512",
@@ -94,12 +98,5 @@
     "C:\\Users\\hoang\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512",
     "C:\\Users\\hoang\\.nuget\\packages\\system.windows.extensions\\5.0.0\\system.windows.extensions.5.0.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "Undefined",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Problem reading the cache file d:\\ProjectCS445\\serverapi\\obj\\project.nuget.cache : Invalid property identifier character: <. Path 'version', line 3, position 0."
-    }
-  ]
+  "logs": []
 }
