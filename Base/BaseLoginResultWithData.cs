@@ -3,17 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PetShop.Models
+namespace serverapi.Base
 {
     /// <summary>
     /// 
     /// </summary>
-    public class JwtResponseModel
+    public class BaseLoginResultWithData<T> : BaseResult
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool Result { get; set; }
         /// <summary>
         /// 
         /// </summary>
@@ -25,6 +21,7 @@ namespace PetShop.Models
         /// <summary>
         /// 
         /// </summary>
-        public List<string> Errors { get; set; } = new List<string>();
+        public T? Data { get; set; }
+
     }
 }

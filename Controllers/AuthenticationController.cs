@@ -1,8 +1,12 @@
+using System.Net;
+using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PetShop.Models;
 using PetShop.Services;
+using serverapi.Base;
+using serverapi.Dtos.Auths;
 using serverapi.Entity;
 using serverapi.Models;
 using serverapi.Services.Iservice;
@@ -81,8 +85,8 @@ namespace PetShop.Controllers
                         return Ok(new JwtResponseModel()
                         {
                             Result = true,
-                            Token = token.AccessToken,
-                            RefreshToken = token.RefreshToken
+                            Token = token.AccessToken!,
+                            RefreshToken = token.RefreshToken!
                         });
                     }
                     return BadRequest(new JwtResponseModel()
@@ -119,6 +123,8 @@ namespace PetShop.Controllers
         /// </remarks>
 
         [HttpPost("/dang-nhap")]
+        [ProducesResponseType(typeof(BaseLoginResultWithData<UserDataDto>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseResultBadRequest), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> DangNhap([FromBody] LoginResponse loginResponse)
         {
             if (ModelState.IsValid)
@@ -126,9 +132,9 @@ namespace PetShop.Controllers
                 var nguoiDung = await _userManager.FindByEmailAsync(loginResponse.UserName!);
                 if (nguoiDung is null)
                 {
-                    return BadRequest(new JwtResponseModel()
+                    return BadRequest(new BaseResultBadRequest()
                     {
-                        Result = false,
+                        Success = false,
                         Errors = new List<string>(){
                             "Tên đăng nhập không tồn tại!"
                         }
@@ -136,33 +142,32 @@ namespace PetShop.Controllers
                 }
                 var isCorrect = await _userManager.CheckPasswordAsync(nguoiDung, loginResponse.Password!);
                 if (!isCorrect)
-                    return BadRequest(new JwtResponseModel()
+                    return BadRequest(new BaseResultBadRequest()
                     {
-                        Result = false,
+                        Success = false,
                         Errors = new List<string>(){
                             "Mật khẩu không đúng!"
                         }
                     });
                 var jwtToken = await JwtToken.GenerateJwtToken(_userManager, nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
 
-                return Ok(new JwtResponseModel()
+                return Ok(new BaseLoginResultWithData<UserDataDto>()
                 {
                     Result = true,
-                    Token = jwtToken.AccessToken,
-                    RefreshToken = jwtToken.RefreshToken,
-                    Data = new LoginRequest()
-                    {
-                        Name = nguoiDung.Name,
-                        Email = nguoiDung.Email,
-                        ImageUrl = nguoiDung.ImageUrl
-                    }
+                    Token = jwtToken.AccessToken!,
+                    RefreshToken = jwtToken.RefreshToken!,
+                    Data = nguoiDung.Adapt<UserDataDto>()
                 });
             }
-            return BadRequest(new JwtResponseModel()
+            return BadRequest(new BaseLoginResultWithData<UserDataDto>()
             {
                 Result = false,
-                Errors = new List<string>(){
-                    "Tên đăng nhập hoặc mật khẩu không hợp lệ"
+                Errors = new List<BaseError>(){
+                    new BaseError()
+                    {
+                        Code = "",
+                        Message = "Tên đăng nhập hoặc mật khẩu không hợp lệ"
+                    }
                 }
             });
         }
@@ -192,12 +197,12 @@ namespace PetShop.Controllers
             var jwtToken = await JwtToken.GenerateJwtToken(_userManager, nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
 
             // Trả về jwt token cho client
-            return Ok(new JwtResponseModel()
+            return Ok(new BaseLoginResultWithData<UserDataDto>()
             {
                 Result = true,
-                Data = userInfo,
-                Token = jwtToken.AccessToken,
-                RefreshToken = jwtToken.RefreshToken
+                Data = userInfo.Adapt<UserDataDto>(),
+                Token = jwtToken.AccessToken!,
+                RefreshToken = jwtToken.RefreshToken!
             });
         }
 

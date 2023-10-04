@@ -9,24 +9,49 @@ using serverapi.Repository.OrderRepository;
 
 namespace serverapi.Repository.OrderDetailRepository
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class OrderDetailRepository : IOrderDetailRepository
     {
 
         private readonly PetShopDbContext _context;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
         public OrderDetailRepository(PetShopDbContext context)
         {
             _context = context;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public async Task<IEnumerable<OrderDetail>> GetOrderDetailsAsync()
         {
             return await _context.OrderDetails!.ToListAsync();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="orderId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+
         public async Task<OrderDetail> GetOrderDetailByIdAsync(int orderId, int productId)
         {
             return (await _context.OrderDetails!.FindAsync(orderId, productId))!;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="orderDetail"></param>
+        /// <returns></returns>
 
         public async Task CreateOrderDetailAsync(OrderDetail orderDetail)
         {
@@ -51,11 +76,24 @@ namespace serverapi.Repository.OrderDetailRepository
             await _context.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="orderDetail"></param>
+        /// <returns></returns>
+
         public async Task UpdateOrderDetailAsync(OrderDetail orderDetail)
         {
             _context.Entry(orderDetail).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="orderId"></param>
+        /// <param name="productId"></param>
+        /// <returns></returns>
 
         public async Task DeleteOrderDetailAsync(int orderId, int productId)
         {

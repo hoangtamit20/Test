@@ -3,25 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PetShop.Models
+namespace serverapi.Base
 {
     /// <summary>
     /// 
     /// </summary>
-    public class JwtResponseModel
+    public class BaseResultBadRequest
     {
         /// <summary>
         /// 
         /// </summary>
-        public bool Result { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string Token { get; set; } = null!;
-        /// <summary>
-        /// 
-        /// </summary>
-        public string RefreshToken { get; set; } = null!;
+        public bool Success { get; set; }
+
         /// <summary>
         /// 
         /// </summary>

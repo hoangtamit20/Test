@@ -6,12 +6,39 @@ using serverapi.Entity;
 
 namespace serverapi.Repository.OrderRepository
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public interface IOrderRepository
-{
-    Task<IEnumerable<Order>> GetOrdersAsync();
-    Task<Order> GetOrderByIdAsync(int id);
-    Task CreateOrderAsync(Order order);
-    Task UpdateOrderAsync(Order order);
-    Task DeleteOrderAsync(int id);
-}
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        Task<IEnumerable<Order>> GetOrdersAsync();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<Order> GetOrderByIdAsync(int id);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns></returns>
+        Task CreateOrderAsync(Order order);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns></returns>
+        Task UpdateOrderAsync(Order order);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task DeleteOrderAsync(int id);
+    }
 }

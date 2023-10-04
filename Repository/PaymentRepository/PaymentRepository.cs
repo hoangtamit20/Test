@@ -8,25 +8,46 @@ using serverapi.Entity;
 
 namespace serverapi.Repository.PaymentRepository
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class PaymentRepository : IPaymentRepository
     {
 
         private readonly PetShopDbContext _context;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
         public PaymentRepository(PetShopDbContext context)
         {
             _context = context;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 
         public async Task<IEnumerable<Payment>> GetPaymentsAsync()
         {
             return await _context.Payments!.ToListAsync();
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
 
         public async Task<Payment> GetPaymentByIdAsync(int id)
         {
             return (await _context.Payments!.FindAsync(id))!;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="payment"></param>
+        /// <returns></returns>
 
         public async Task CreatePaymentAsync(Payment payment)
         {
@@ -50,12 +71,22 @@ namespace serverapi.Repository.PaymentRepository
             _context.Payments!.Add(payment);
             await _context.SaveChangesAsync();
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="payment"></param>
+        /// <returns></returns>
 
         public async Task UpdatePaymentAsync(Payment payment)
         {
             _context.Entry(payment).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
 
         public async Task DeletePaymentAsync(int id)
         {
