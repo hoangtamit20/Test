@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "d:\\ProjectCS445\\serverapi\\PetShop.csproj": {}
+    "D:\\ProjectCS445\\serverapi\\PetShop.csproj": {}
   },
   "projects": {
-    "d:\\ProjectCS445\\serverapi\\PetShop.csproj": {
+    "D:\\ProjectCS445\\serverapi\\PetShop.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\ProjectCS445\\serverapi\\PetShop.csproj",
+        "projectUniqueName": "D:\\ProjectCS445\\serverapi\\PetShop.csproj",
         "projectName": "PetShop",
-        "projectPath": "d:\\ProjectCS445\\serverapi\\PetShop.csproj",
+        "projectPath": "D:\\ProjectCS445\\serverapi\\PetShop.csproj",
         "packagesPath": "C:\\Users\\hoang\\.nuget\\packages\\",
-        "outputPath": "d:\\ProjectCS445\\serverapi\\obj\\",
+        "outputPath": "D:\\ProjectCS445\\serverapi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\hoang\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -52,7 +52,7 @@
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
-              "version": "[7.0.10, )"
+              "version": "[7.0.11, )"
             },
             "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
               "target": "Package",
@@ -60,7 +60,7 @@
             },
             "Microsoft.AspNetCore.Identity.UI": {
               "target": "Package",
-              "version": "[7.0.10, )"
+              "version": "[7.0.11, )"
             },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
@@ -70,11 +70,19 @@
               "target": "Package",
               "version": "[7.0.11, )"
             },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "target": "Package",
+              "version": "[7.0.11, )"
+            },
             "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[7.0.11, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
               "target": "Package",
               "version": "[7.0.10, )"
             },
-            "Microsoft.EntityFrameworkCore.Tools": {
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
               "target": "Package",
               "version": "[7.0.10, )"
             },
