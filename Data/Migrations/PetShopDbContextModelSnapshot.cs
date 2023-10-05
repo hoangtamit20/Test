@@ -538,6 +538,9 @@ namespace PetShop.Data.Migrations
                     b.Property<int>("MerchantId")
                         .HasColumnType("int");
 
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
                     b.Property<decimal?>("PaidAmount")
                         .HasColumnType("decimal(19, 2)");
 
@@ -545,9 +548,6 @@ namespace PetShop.Data.Migrations
                         .HasColumnType("datetime");
 
                     b.Property<int>("PaymentDestinationId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PaymentId")
                         .HasColumnType("int");
 
                     b.Property<string>("PaymentLanguage")
@@ -573,9 +573,9 @@ namespace PetShop.Data.Migrations
 
                     b.HasIndex("MerchantId");
 
-                    b.HasIndex("PaymentDestinationId");
+                    b.HasIndex("OrderId");
 
-                    b.HasIndex("PaymentId");
+                    b.HasIndex("PaymentDestinationId");
 
                     b.ToTable("Payment");
                 });
@@ -1061,23 +1061,23 @@ namespace PetShop.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("serverapi.Entity.Order", "Order")
+                        .WithMany("Payments")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("serverapi.Entity.PaymentDestination", "PaymentDestination")
                         .WithMany("Payments")
                         .HasForeignKey("PaymentDestinationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("serverapi.Entity.Order", "PaymentNavigation")
-                        .WithMany("Payments")
-                        .HasForeignKey("PaymentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Merchant");
 
-                    b.Navigation("PaymentDestination");
+                    b.Navigation("Order");
 
-                    b.Navigation("PaymentNavigation");
+                    b.Navigation("PaymentDestination");
                 });
 
             modelBuilder.Entity("serverapi.Entity.PaymentDestination", b =>

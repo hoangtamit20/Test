@@ -88,7 +88,7 @@ public partial class Payment
     /// <summary>
     /// 
     /// </summary>
-    public int PaymentId { get; set; }
+    public int OrderId { get; set; }
 
     /// <summary>
     /// 
@@ -107,9 +107,9 @@ public partial class Payment
     /// <summary>
     /// 
     /// </summary>
-    [ForeignKey("PaymentId")]
+    [ForeignKey("OrderId")]
     [InverseProperty("Payments")]
-    public virtual Order PaymentNavigation { get; set; } = null!;
+    public virtual Order Order { get; set; } = null!;
 
     /// <summary>
     /// 

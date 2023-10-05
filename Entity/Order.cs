@@ -71,7 +71,7 @@ public partial class Order
     /// <summary>
     /// 
     /// </summary>
-    [InverseProperty("PaymentNavigation")]
+    [InverseProperty("Order")]
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
     /// <summary>
