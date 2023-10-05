@@ -43,7 +43,7 @@ namespace serverapi.Controllers
         [AllowAnonymous]
         [Route("/list-product-info-homepage")]
         [ProducesResponseType(typeof(List<ProductInfoDto>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetAlls() => Ok(await GetListProductInfoAsync("VN"));
+        public async Task<IActionResult> GetAlls() => Ok(await getMa("VN"));
 
         /// <summary>
         /// List info of all product use display home page with choosed language (AllowAnonymous)
@@ -163,9 +163,6 @@ namespace serverapi.Controllers
         /// <returns></returns>
         /// <remarks>
         ///     PUT :
-        /// {
-        ///     
-        /// }
         /// </remarks>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(UpdateProductDto), (int)HttpStatusCode.OK)]
@@ -315,6 +312,42 @@ namespace serverapi.Controllers
                     }).ToList(),
                 }).ToListAsync();
 
+            return listProductInfo;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="idLanguage"></param>
+        /// <returns></returns>
+        private async Task<List<ProductInfoDto>> getMa(string idLanguage)
+        {
+            var listProductInfo = await _dbContext.Products
+            .Include(p => p.ProductTranslations)
+            .Include(p => p.Category)
+            .ThenInclude(c => c.CategoryTranslations)
+            .Include(p => p.ProductImages)
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(p => p.ProductTranslations.Any(pt => pt.LanguageId == idLanguage))
+            .Select(p => new ProductInfoDto
+            {
+                Id = p.Id,
+                Name = p.ProductTranslations.FirstOrDefault(pt => pt.LanguageId == idLanguage)!.Name,
+                Price = p.Price,
+                OriginalPrice = p.OriginalPrice,
+                Stock = p.Stock,
+                CategoryId = p.CategoryId,
+                CategoryName = p.Category.CategoryTranslations.FirstOrDefault(ct => ct.LanguageId == idLanguage)!.Name!,
+                Description = p.ProductTranslations.FirstOrDefault(pt => pt.LanguageId == idLanguage)!.Description,
+                Details = p.ProductTranslations.FirstOrDefault(pt => pt.LanguageId == idLanguage)!.Details,
+                SeoDescription = p.ProductTranslations.FirstOrDefault(pt => pt.LanguageId == idLanguage)!.SeoDescription,
+                SeoTitle = p.ProductTranslations.FirstOrDefault(pt => pt.LanguageId == idLanguage)!.SeoTitle,
+                SeoAlias = p.ProductTranslations.FirstOrDefault(pt => pt.LanguageId == idLanguage)!.SeoAlias,
+                ListProductImage = p.ProductImages.Select(pi => new ProductImageDtos { Id = pi.Id, ImageUrl = pi.ImagePath }).ToList()
+            })
+            .ToListAsync();
             return listProductInfo;
         }
     }

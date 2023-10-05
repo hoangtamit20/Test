@@ -3,32 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace serverapi.Models.Orders
+namespace serverapi.Dtos.Carts
 {
     /// <summary>
     /// 
     /// </summary>
-    public class OrderRequest
+    public class CartInfoDto
     {
         /// <summary>
         /// 
         /// </summary>
-        public string? UserId { get; set; }
+        public int Id { get; set; }
         /// <summary>
         /// 
         /// </summary>
-        public string? ShippingAddress { get; set; }
+        public int ProductId { get; set; }
         /// <summary>
         /// 
         /// </summary>
-        public decimal ShippingCost { get; set; }
+        public string Name { get; set; } = null!;
         /// <summary>
         /// 
         /// </summary>
-        public string? PaymentMethod { get; set; }
+        public decimal Price { get; set; }
         /// <summary>
         /// 
         /// </summary>
-        public IEnumerable<OrderDetailRequest>? OrderDetails { get; set; }
+        public int Quantity { get; set; }
+
     }
 }

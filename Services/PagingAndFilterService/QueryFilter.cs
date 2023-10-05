@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PetShop.Configurations
+namespace serverapi.Services.PagingAndFilterService
 {
     /// <summary>
     /// 
     /// </summary>
-    public class JwtConfig
+    public class QueryFilter : PaginationFilter
     {
         /// <summary>
         /// 
         /// </summary>
-        public string? SecretKey { get; set; }
+        public string? Filter { get; set; }
     }
 }

@@ -1,13 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace serverapi.Models
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class TokenModel
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public string? AccessToken { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public string? RefreshToken { get; set; }
     }
 }

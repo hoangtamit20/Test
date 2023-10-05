@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace serverapi.Entity;
 
@@ -60,7 +57,7 @@ public partial class Product
     /// 
     /// </summary>
     [InverseProperty("Product")]
-    public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
+    public virtual ICollection<CartItems> CartItems { get; set; } = new List<CartItems>();
 
     /// <summary>
     /// 

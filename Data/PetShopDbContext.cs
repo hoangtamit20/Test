@@ -31,6 +31,11 @@ namespace PetShop.Data
         /// <summary>
         /// 
         /// </summary>
+        public virtual DbSet<CartItems> CartItems { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual DbSet<Category> Categories { get; set; } = null!;
 
         /// <summary>

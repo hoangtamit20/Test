@@ -1,30 +1,27 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PetShop.Models
+namespace serverapi.Dtos.Carts
 {
     /// <summary>
     /// 
     /// </summary>
-    public class NguoiDungRegisterModel
+    public class CartResponseDto
     {
         /// <summary>
         /// 
         /// </summary>
-        [Required]
-        public string? Name { get; set; }
+        public int CartId { get; set; }
         /// <summary>
         /// 
         /// </summary>
-        [Required]
-        public string? Email { get; set; }
+        public int ProductId { get; set; }
         /// <summary>
         /// 
         /// </summary>
-        [Required]
-        public string? Password { get; set; }
+        public int Quantity { get; set; }
+
     }
 }

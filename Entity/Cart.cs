@@ -18,17 +18,6 @@ public partial class Cart
     /// <summary>
     /// 
     /// </summary>
-    public int Quantity { get; set; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    [Column(TypeName = "decimal(19, 2)")]
-    public decimal Price { get; set; }
-
-    /// <summary>
-    /// 
-    /// </summary>
     [Column(TypeName = "datetime")]
     public DateTime DateCreated { get; set; }
 
@@ -41,19 +30,14 @@ public partial class Cart
     /// <summary>
     /// 
     /// </summary>
-    public int ProductId { get; set; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    [ForeignKey("ProductId")]
-    [InverseProperty("Carts")]
-    public virtual Product Product { get; set; } = null!;
-
-    /// <summary>
-    /// 
-    /// </summary>
     [ForeignKey("UserId")]
     [InverseProperty("Carts")]
     public virtual AppUser User { get; set; } = null!;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [InverseProperty("Cart")]
+    public virtual ICollection<CartItems> CartItems { get; set; } = new List<CartItems>();
+
 }

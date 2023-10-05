@@ -44,14 +44,12 @@ namespace PetShop.Controllers
         /// <param name="nguoiDungRegisterModel"></param>
         /// <returns></returns>
         /// <remarks>
-        /// 
-        ///     POST
-        ///     {
-        ///         Name = "Võ Văn A",
-        ///         Email = "vovana@gmail.com",
-        ///         Password = "VoVanA=123"
-        ///     }
-        /// 
+        ///     POST :
+        /// {
+        ///     "Name" = "Võ Văn A",
+        ///     "Email" = "vovana@gmail.com",
+        ///     "Password" = "VoVanA=123"
+        /// }
         /// </remarks>
         [HttpPost("/dang-ky")]
         public async Task<IActionResult> DangKy([FromBody] NguoiDungRegisterModel nguoiDungRegisterModel)
@@ -113,13 +111,11 @@ namespace PetShop.Controllers
         /// <param name="loginResponse"></param>
         /// <returns></returns>
         /// <remarks>
-        /// 
         ///     POST
-        ///     {
-        ///         Email = "vovana@gmail.com",
-        ///         Password = "VoVanA=123"
-        ///     }
-        /// 
+        /// {
+        ///     Email = "vovana@gmail.com",
+        ///     Password = "VoVanA=123"
+        /// }
         /// </remarks>
 
         [HttpPost("/dang-nhap")]
@@ -174,10 +170,16 @@ namespace PetShop.Controllers
 
 
         /// <summary>
-        /// 
+        /// Api login with google
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
+        /// <remarks>
+        ///     POST : google-login
+        /// {
+        ///     "token" : ""
+        /// }
+        /// </remarks>
         [HttpPost("/google-login")]
         public async Task<IActionResult> GoogleLogin([FromHeader] string token)
         {
