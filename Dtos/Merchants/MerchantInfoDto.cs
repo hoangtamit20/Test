@@ -1,18 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using MediatR;
-using serverapi.Base;
-using serverapi.Dtos.Merchants;
-
-namespace serverapi.Commands.Merchants
+namespace serverapi.Dtos.Merchants
 {
     /// <summary>
     /// 
     /// </summary>
-    public class CreateMerchant : IRequest<BaseResultWithData<MerchantDto>>
+    public class MerchantInfoDto
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Id { get; set; }
         /// <summary>
         /// 
         /// </summary>
@@ -29,5 +25,9 @@ namespace serverapi.Commands.Merchants
         /// 
         /// </summary>
         public string? MerchantReturnUrl { get; set; } = string.Empty;
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsActive { get; set; }
     }
 }

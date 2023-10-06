@@ -1,13 +1,14 @@
-using MediatR;
-using serverapi.Base;
-using serverapi.Dtos.Payments;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace serverapi.Commands.Payments
+namespace serverapi.Dtos.Payments
 {
     /// <summary>
     /// 
     /// </summary>
-    public class CreatePayment : IRequest<BaseResultWithData<PaymentLinkDto>>
+    public class PaymentInfoDto
     {
         /// <summary>
         /// 
@@ -53,9 +54,9 @@ namespace serverapi.Commands.Payments
         /// </summary>
         public int PaymentDestinationId { get; set; }
 
-        // /// <summary>
-        // /// 
-        // /// </summary>
-        // public int PaymentId { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string SignValue { get; set; } = null!;
     }
 }

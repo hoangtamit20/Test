@@ -3,36 +3,36 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace serverapi.Dtos.Merchants
+namespace serverapi.Configurations
 {
     /// <summary>
     /// 
     /// </summary>
-    public class MerchantDto
+    public class VnPayConfig
     {
         /// <summary>
         /// 
         /// </summary>
-        public int Id { get; set; }
+        public static string ConfigName => "Vnpay";
         /// <summary>
         /// 
         /// </summary>
-        public string? MerchantName { get; set; } = string.Empty;
+        public string Version { get; set; } = string.Empty;
         /// <summary>
         /// 
         /// </summary>
-        public string? MerchantWebLink { get; set; } = string.Empty;
+        public string TmnCode { get; set; } = string.Empty;
         /// <summary>
         /// 
         /// </summary>
-        public string? MerchantIpnUrl { get; set; } = string.Empty;
+        public string HashSecret { get; set; } = string.Empty;
         /// <summary>
         /// 
         /// </summary>
-        public string? MerchantReturnUrl { get; set; } = string.Empty;
+        public string ReturnUrl { get; set; } = string.Empty;
         /// <summary>
         /// 
         /// </summary>
-        public bool IsActive { get; set; }
+        public string PaymentUrl { get; set;} = string.Empty;
     }
 }

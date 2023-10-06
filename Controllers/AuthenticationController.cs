@@ -8,7 +8,6 @@ using PetShop.Services;
 using serverapi.Base;
 using serverapi.Dtos.Auths;
 using serverapi.Entity;
-using serverapi.Models;
 using serverapi.Services.Iservice;
 
 namespace PetShop.Controllers
