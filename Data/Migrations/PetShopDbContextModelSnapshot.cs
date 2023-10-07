@@ -483,6 +483,9 @@ namespace PetShop.Data.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("decimal(19, 2)");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasMaxLength(450)
@@ -524,14 +527,6 @@ namespace PetShop.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Content")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Currency")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
                     b.Property<DateTime?>("ExpireDate")
                         .HasColumnType("datetime");
 
@@ -543,6 +538,14 @@ namespace PetShop.Data.Migrations
 
                     b.Property<decimal?>("PaidAmount")
                         .HasColumnType("decimal(19, 2)");
+
+                    b.Property<string>("PaymentContent")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("PaymentCurrency")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<DateTime?>("PaymentDate")
                         .HasColumnType("datetime");
