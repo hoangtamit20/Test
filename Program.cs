@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PetShop.Configurations;
 using PetShop.Data;
+using serverapi.Configurations;
 using serverapi.Entity;
 using serverapi.Repository.OrderDetailRepository;
 using serverapi.Repository.OrderRepository;
@@ -136,6 +137,12 @@ builder.Services.AddScoped<IValidator<Product>, ProductValidator>();
 // builder.Services.AddMediatR(options => {
 //     options.RegisterServicesFromAssembly(typeof(CreateMerchant).Assembly);
 // });
+
+builder.Services.AddHttpContextAccessor();
+
+// add payment method service
+builder.Services.Configure<VnPayConfig>(
+                builder.Configuration.GetSection(VnPayConfig.ConfigName));
 
 
 var app = builder.Build();

@@ -2,18 +2,14 @@ using System.Net;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PetShop.Data;
 using serverapi.Base;
 using serverapi.Configurations;
+using serverapi.Constants;
 using serverapi.Dtos.Payments;
 using serverapi.Dtos.Payments.VnPay;
 using serverapi.Entity;
-using serverapi.Models.Orders;
-using serverapi.Models.Payments;
-using serverapi.Repository.OrderRepository;
-using serverapi.Repository.PaymentRepository;
 
 namespace serverapi.Controllers
 {
@@ -28,100 +24,37 @@ namespace serverapi.Controllers
         private readonly VnPayConfig _vnpayConfig;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        // private readonly IOrderRepository _orderRepository;
-        // private readonly IPaymentRepository _paymentRepository;
-
-        // public PaymentController(IOrderRepository orderRepository, IPaymentRepository paymentRepository)
-        // {
-        //     _orderRepository = orderRepository;
-        //     _paymentRepository = paymentRepository;
-        // }
-
-        // [HttpPost]
-        // [Route("api/v1/payments")]
-        // public async Task<ActionResult<Payment>> CreatePayment(PaymentRequest paymentRequest)
-        // {
-        //     // Validate the request
-        //     if (!ModelState.IsValid)
-        //     {
-        //         return BadRequest(ModelState);
-        //     }
-
-        //     // Get the order
-        //     Order order = await _orderRepository.GetOrderByIdAsync(paymentRequest.OrderId);
-        //     if (order == null)
-        //     {
-        //         return NotFound();
-        //     }
-
-        //     // Create a new payment
-        //     Payment payment = new Payment
-        //     {
-        //         OrderId = order.Id,
-        //         Amount = order.OrderDetails!.AsEnumerable().Sum(od => od.Quantity * od.UnitPrice),
-        //         PaymentMethod = paymentRequest.PaymentMethod,
-        //         Status = PaymentStatus.Pending.ToString(),
-        //     };
-
-        //     // Save the payment
-        //     await _paymentRepository.CreatePaymentAsync(payment);
-
-        //     // Update the order status
-        //     order.Status = OrderStatus.Processing.ToString();
-        //     await _orderRepository.UpdateOrderAsync(order);
-
-        //     // Return the payment
-        //     return Ok(payment);
-        // }
-
-
-        // [HttpGet]
-        // [Route("api/v1/payments/{paymentId}/verify")]
-        // public async Task<ActionResult<Payment>> VerifyPayment(int paymentId)
-        // {
-        //     // Get the payment
-        //     Payment payment = await _paymentRepository.GetPaymentByIdAsync(paymentId);
-        //     if (payment is null)
-        //     {
-        //         return NotFound();
-        //     }
-
-        //     // Verify the payment
-        //     var paymentStatus = payment.Status;
-        //     if (paymentStatus == PaymentStatus.Completed.ToString())
-        //     {
-        //         // Update the order status
-        //         payment.Status = PaymentStatus.Completed.ToString();
-        //         await _paymentRepository.UpdatePaymentAsync(payment);
-
-        //         // Update the order status
-        //         var order = await _orderRepository.GetOrderByIdAsync(payment.OrderId);
-        //         order.Status = OrderStatus.Completed.ToString();
-        //         await _orderRepository.UpdateOrderAsync(order);
-        //     }
-
-        //     // Return the payment
-        //     return Ok(payment);
-        // }
-
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="context"></param>
         /// <param name="vnpayConfig"></param>
         /// <param name="httpContextAccessor"></param>
-        public PaymentController(PetShopDbContext context, IOptions<VnPayConfig> vnpayConfig, IHttpContextAccessor httpContextAccessor)
-        {
-            _context = context;
-            _vnpayConfig = vnpayConfig.Value;
-            _httpContextAccessor = httpContextAccessor;
-        }
+        public PaymentController(
+            PetShopDbContext context, 
+            IOptions<VnPayConfig> vnpayConfig, 
+            IHttpContextAccessor httpContextAccessor)
+        => (_context, _httpContextAccessor, _vnpayConfig) 
+        = (context, httpContextAccessor, vnpayConfig.Value);
 
         /// <summary>
-        /// 
+        /// Payment order with VnPay, Momo, ZaloPay (Authorize)
         /// </summary>
         /// <param name="paymentInfoDto"></param>
         /// <returns></returns>
+        /// /// <remarks>
+        ///     POST : PaymentDestinationId {1 - VNPAY; 2 - MOMO; 3 - ZALOPAY}
+        /// {
+        ///     "paymentContent": "THANH TOAN DON HANG 0001",
+        ///     "paymentCurrency": "VND",
+        ///     "paymentRefId": "ORD1234",
+        ///     "requiredAmount": 10000,
+        ///     "paymentLanguage": "vn",
+        ///     "merchantId": 1,
+        ///     "paymentDestinationId": 1,
+        ///     "orderId": 1,
+        ///     "signValue": "12345ABCD"
+        /// }
+        /// </remarks>
         [HttpPost]
         [Authorize]
         [ProducesResponseType(typeof(BaseResultWithData<PaymentLinkDto>), (int)HttpStatusCode.OK)]
@@ -151,7 +84,7 @@ namespace serverapi.Controllers
                     var paymentUrl = string.Empty;
                     switch (await GetPaymentDestinationShortName(payment.PaymentDestinationId))
                     {
-                        case "VNPAY" :
+                        case PaymentMethodConstant.VNPAY :
                             var vnpayRequest = new VnPayRequestDto(
                                 _vnpayConfig.Version,
                                 _vnpayConfig.TmnCode,

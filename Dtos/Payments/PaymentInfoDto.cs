@@ -57,6 +57,11 @@ namespace serverapi.Dtos.Payments
         /// <summary>
         /// 
         /// </summary>
+        public int OrderId { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public string SignValue { get; set; } = null!;
     }
 }

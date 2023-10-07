@@ -19,13 +19,13 @@ public partial class Payment
     /// 
     /// </summary>
     [StringLength(255)]
-    public string? Content { get; set; }
+    public string? PaymentContent { get; set; }
 
     /// <summary>
     /// 
     /// </summary>
     [StringLength(10)]
-    public string? Currency { get; set; }
+    public string? PaymentCurrency { get; set; }
 
     /// <summary>
     /// 

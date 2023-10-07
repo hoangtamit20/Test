@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace serverapi.Contants
+namespace serverapi.Constants
 {
     /// <summary>
     /// 
     /// </summary>
-    public class MessageContants
+    public class MessageConstant
     {
         /// <summary>
         /// 

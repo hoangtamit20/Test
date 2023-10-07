@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using serverapi.Enum;
@@ -50,6 +48,12 @@ public partial class Order
     [StringLength(11)]
     [Unicode(false)]
     public string ShipPhoneNumber { get; set; } = null!;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Column(TypeName = "decimal(19, 2)")]
+    public decimal TotalPrice { get; set; } = 0;
 
     /// <summary>
     /// 
