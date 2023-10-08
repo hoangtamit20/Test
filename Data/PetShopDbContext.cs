@@ -116,6 +116,18 @@ namespace PetShop.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<AppUser>(b =>
+            {
+                b.HasIndex(u => u.Email).IsUnique();
+                b.HasIndex(u => u.UserName).IsUnique();
+            });
+
+            builder.Entity<Cart>(c =>
+            {
+                c.HasIndex(c => c.UserId).IsUnique();
+            });
+
             foreach (var entityType in builder.Model.GetEntityTypes())
             {
                 var tableName = entityType.GetTableName();
@@ -124,17 +136,6 @@ namespace PetShop.Data
                     entityType.SetTableName(tableName.Substring(6));
                 }
             }
-            builder.Entity<AppUser>()
-                    .HasIndex(u => u.UserName)
-                    .IsUnique();
-            builder.Entity<AppUser>()
-                    .HasIndex(u => u.Email)
-                    .IsUnique();
-            builder.Entity<Cart>()
-                    .HasIndex(c => c.UserId)
-                    .IsUnique();
-
-            // builder.Entity<OrderDetail>(entity => entity.HasKey(or => new {or.ProductId, or.OrderId}));
         }
 
         /// <summary>

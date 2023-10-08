@@ -1,30 +1,14 @@
-namespace serverapi.Dtos.Products
+namespace serverapi.Dtos.Categories
 {
     /// <summary>
     /// 
     /// </summary>
-    public class CreateProductDto
+    public class CategoryInfoDto
     {
         /// <summary>
         /// 
         /// </summary>
-        public decimal Price { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public decimal OriginalPrice { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Stock { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool? IsFeatured { get; set; }
-
+        public int Id { get; set; }
         /// <summary>
         /// 
         /// </summary>
@@ -44,10 +28,5 @@ namespace serverapi.Dtos.Products
         /// 
         /// </summary>
         public string? SeoAlias { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int CategoryId { get; set; }
     }
 }

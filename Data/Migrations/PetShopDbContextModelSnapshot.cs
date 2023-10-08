@@ -243,14 +243,6 @@ namespace PetShop.Data.Migrations
                         .IsUnique()
                         .HasFilter("[UserName] IS NOT NULL");
 
-                    b.HasIndex(new[] { "Email" }, "AppUser_Email")
-                        .IsUnique()
-                        .HasFilter("[Email] IS NOT NULL");
-
-                    b.HasIndex(new[] { "UserName" }, "AppUser_UserName")
-                        .IsUnique()
-                        .HasFilter("[UserName] IS NOT NULL");
-
                     b.ToTable("Users", (string)null);
                 });
 
@@ -273,9 +265,6 @@ namespace PetShop.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.HasIndex(new[] { "UserId" }, "AppUser_UserId_CartItems")
                         .IsUnique();
 
                     b.ToTable("Cart");

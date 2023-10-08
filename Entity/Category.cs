@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 using serverapi.Enum;
 
 namespace serverapi.Entity;
@@ -22,12 +19,12 @@ public partial class Category
     /// <summary>
     /// 
     /// </summary>
-    public int SortOrder { get; set; }
+    public int SortOrder { get; set; } = 0;
 
     /// <summary>
     /// 
     /// </summary>
-    public bool IsShowHome { get; set; }
+    public bool IsShowHome { get; set; } = true;
 
     /// <summary>
     /// 
@@ -37,7 +34,7 @@ public partial class Category
     /// <summary>
     /// 
     /// </summary>
-    public Status Status { get; set; }
+    public Status Status { get; set; } = Status.Valid;
 
     /// <summary>
     /// 

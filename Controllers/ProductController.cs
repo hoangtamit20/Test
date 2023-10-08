@@ -61,9 +61,9 @@ namespace serverapi.Controllers
         [AllowAnonymous]
         [Route("/list-product-info-homepage")]
         [ProducesResponseType(typeof(List<ProductInfoDto>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetAlls(string idLanguage, [FromQuery] PagingFilterDto pagingFilterDto)
+        public async Task<IActionResult> GetAlls(string? idLanguage, [FromQuery] PagingFilterDto pagingFilterDto)
         {
-            var list = await GetListProductInfoAsync(idLanguage);
+            var list = await GetListProductInfoAsync(idLanguage!);
             list = list.Skip((pagingFilterDto.PageSize - 1)*pagingFilterDto.PageIndex)
                 .Take(list.Count < pagingFilterDto.PageSize*pagingFilterDto.PageIndex ? 
                     list.Count : pagingFilterDto.PageIndex * pagingFilterDto.PageSize)
@@ -134,10 +134,10 @@ namespace serverapi.Controllers
         /// }
         /// </remarks>
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        // [Authorize(Roles = "Admin")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> Create([FromBody] CreateProductDto createProductDto)
+        public async Task<IActionResult> Create(string? language, [FromBody] CreateProductDto createProductDto)
         {
             if (ModelState.IsValid)
             {
@@ -148,13 +148,14 @@ namespace serverapi.Controllers
                         // create product
                         //using auto map: CreateProductDto -> Product
                         var product = createProductDto.Adapt<Product>();
-                        await _dbContext.Products.AddAsync(product);
+                        _dbContext.Products.Add(product);
                         await _dbContext.SaveChangesAsync();
 
                         // create product trans
                         var productTrans = createProductDto.Adapt<ProductTranslation>();
                         productTrans.ProductId = product.Id;
-                        await _dbContext.ProductTranslations.AddAsync(productTrans);
+                        productTrans.LanguageId = language ?? "VN";
+                        _dbContext.ProductTranslations.Add(productTrans);
                         await _dbContext.SaveChangesAsync();
                         // commit trans
                         transaction.Commit();
