@@ -1,25 +1,25 @@
-namespace serverapi.Models
+namespace serverapi.Enum
 {
     /// <summary>
     /// 
     /// </summary>
-    public class GoogleResponseModel
+    public enum PaymentStatus
     {
         /// <summary>
         /// 
         /// </summary>
-        public string? Email { get; set; }
+        Pending,
         /// <summary>
         /// 
         /// </summary>
-        public string? Name { get; set; }
+        Processing,
         /// <summary>
         /// 
         /// </summary>
-        public string? FamilyName { get; set; }
+        Completed,
         /// <summary>
         /// 
         /// </summary>
-        public string? Picture { get; set; }
+        Cancelled
     }
 }

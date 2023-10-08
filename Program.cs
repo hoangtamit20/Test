@@ -101,8 +101,8 @@ builder.Services.AddAuthentication(options =>
 })
 .AddGoogle(options =>
 {
-    options.ClientId = builder.Configuration["Authentication:Jwt:ClientId"]!;
-    options.ClientSecret = builder.Configuration["Authentication:Jwt:ClientSecret"]!;
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
 });
 
 

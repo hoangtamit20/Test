@@ -180,6 +180,7 @@ namespace PetShop.Controllers
         /// }
         /// </remarks>
         [HttpPost("/google-login")]
+        [ProducesResponseType(typeof(BaseLoginResultWithData<UserDataDto>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GoogleLogin([FromHeader] string token)
         {
             // Gọi hàm GetUserInfoAsync của GoogleService để lấy thông tin người dùng từ Google
@@ -188,23 +189,65 @@ namespace PetShop.Controllers
             // Tạo một đối tượng NguoiDung từ thông tin người dùng
             var nguoiDung = new AppUser
             {
-                Id = userInfo.Email!,
-                Email = userInfo.Email,
                 Name = userInfo.Name!,
-                ImageUrl = userInfo.ImageUrl
+                Email = userInfo.Email,
+                ImageUrl = userInfo.Picture
             };
 
-            // Gọi hàm GenerateJwtToken để tạo ra jwt token từ đối tượng NguoiDung
-            var jwtToken = await JwtToken.GenerateJwtToken(_userManager, nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
-
-            // Trả về jwt token cho client
-            return Ok(new BaseLoginResultWithData<UserDataDto>()
+            var nd = await _userManager.FindByEmailAsync(nguoiDung.Email!);
+            if (nd is null)
             {
-                Result = true,
-                Data = userInfo.Adapt<UserDataDto>(),
-                Token = jwtToken.AccessToken!,
-                RefreshToken = jwtToken.RefreshToken!
-            });
+                nguoiDung.UserName = userInfo.Email;
+                var isCreate = await _userManager.CreateAsync(nguoiDung);
+                if (isCreate.Succeeded)
+                {
+                    // Update the user with the additional properties
+                    await _userManager.UpdateAsync(nguoiDung);
+                    var user = await _userManager.FindByEmailAsync(nguoiDung.Email!);
+                    if (user is not null)
+                    {
+                        if (!await _roleManager.RoleExistsAsync("User"))
+                        {
+                            await _roleManager.CreateAsync(new IdentityRole("User"));
+                        }
+                        await _userManager.AddToRoleAsync(user, "User");
+                    }
+                    // generate token
+                    var tokenCreate = await JwtToken.GenerateJwtToken(_userManager, nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
+                    return Ok(new BaseLoginResultWithData<UserDataDto>()
+                    {
+                        Result = true,
+                        Data = nguoiDung.Adapt<UserDataDto>(),
+                        Token = tokenCreate.AccessToken!,
+                        RefreshToken = tokenCreate.RefreshToken!
+                    });
+                }
+                return BadRequest(new BaseLoginResultWithData<UserDataDto>()
+                {
+                    Result = false,
+                    Errors = new List<BaseError>(){
+                    new BaseError()
+                    {
+                        Code = "",
+                        Message = "Create user failed"
+                    }
+                }
+                });
+            }
+            else
+            {
+                // Gọi hàm GenerateJwtToken để tạo ra jwt token từ đối tượng NguoiDung
+                var jwtToken = await JwtToken.GenerateJwtToken(_userManager, nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
+
+                // Trả về jwt token cho client
+                return Ok(new BaseLoginResultWithData<UserDataDto>()
+                {
+                    Result = true,
+                    Data = userInfo.Adapt<UserDataDto>(),
+                    Token = jwtToken.AccessToken!,
+                    RefreshToken = jwtToken.RefreshToken!
+                });
+            }
         }
 
 

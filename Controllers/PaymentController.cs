@@ -7,9 +7,12 @@ using PetShop.Data;
 using serverapi.Base;
 using serverapi.Configurations;
 using serverapi.Constants;
+using serverapi.Dtos.Merchants;
 using serverapi.Dtos.Payments;
 using serverapi.Dtos.Payments.VnPay;
 using serverapi.Entity;
+using serverapi.Enum;
+using serverapi.Helpers;
 
 namespace serverapi.Controllers
 {
@@ -120,6 +123,83 @@ namespace serverapi.Controllers
                 }
 
             }
+        }
+
+
+        /// <summary>
+        /// Get payment by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{id}")]
+        [ProducesResponseType(typeof(PaymentDto), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetPaymentById(int id)
+        {
+            var payment = await _context.Payments.FindAsync(id);
+            if (payment is null)
+                return NotFound(new BaseBadRequestResult(){Errors = new List<string>(){$"Payment with Id : {id} not found!"}});
+            return Ok(payment.Adapt<PaymentDto>());
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vnPayResponseDto"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("vnpay-return")]
+        [ProducesResponseType(typeof(RedirectResult), (int)HttpStatusCode.Found)]
+        public async Task<IActionResult> VnPayReturn([FromQuery]VnPayResponseDto vnPayResponseDto)
+        {
+            string returnUrl = string.Empty;
+            var returnModel = new PaymentReturnDto();
+            try
+            {
+                var isValidSignature = vnPayResponseDto.IsValidSignature(_vnpayConfig.HashSecret);
+                if (isValidSignature)
+                {
+                    var payment = (await _context.Payments.FindAsync(vnPayResponseDto.vnp_TxnRef)).Adapt<PaymentDto>();
+                    if (payment is not null)
+                    {
+                        var merchant = (await _context.Merchants.FindAsync(payment.MerchantId)).Adapt<MerchantInfoDto>();
+                        //TODO: create returnUrl
+                        returnUrl = merchant?.MerchantReturnUrl ?? string.Empty;
+                    }
+                    else
+                    {
+                        returnModel.PaymentStatus = "11";
+                        returnModel.PaymentMessage = "Can't find payment at payment service";
+                    }         
+
+                    if (vnPayResponseDto.vnp_ResponseCode == "00")
+                    {
+                        returnModel.PaymentStatus = "00";
+                        returnModel.PaymentId = payment!.Id;
+                        //TODO: Make signature
+                        returnModel.Signature = Guid.NewGuid().ToString();
+                    }
+                    else
+                    {
+                        returnModel.PaymentStatus = "10";
+                        returnModel.PaymentMessage = "Payment process failed";
+                    }
+                }
+                else
+                {
+                    returnModel.PaymentStatus = "99";
+                    returnModel.PaymentMessage = $"Invalid signature in response!";
+                }
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){$"Failed : {ex.Message} "}});
+            }
+            if (returnUrl.EndsWith("/"))
+                returnUrl = returnUrl.Remove(returnUrl.Length - 1, 1);
+            return Redirect($"{returnUrl}?{returnModel.ToQueryString()}");
         }
 
         private async Task<string> GetPaymentDestinationShortName(int paymentDesId)
