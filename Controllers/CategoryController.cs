@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetShop.Data;
+using serverapi.Base;
+using serverapi.Dtos.Categories;
 using serverapi.Entity;
 
 namespace PetShop.Controllers
@@ -36,10 +40,10 @@ namespace PetShop.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
         {
-          if (_context.Categories == null)
-          {
-              return NotFound();
-          }
+            if (_context.Categories == null)
+            {
+                return NotFound();
+            }
             return await _context.Categories.ToListAsync();
         }
 
@@ -52,10 +56,10 @@ namespace PetShop.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Category>> GetCategory(int id)
         {
-          if (_context.Categories == null)
-          {
-              return NotFound();
-          }
+            if (_context.Categories == null)
+            {
+                return NotFound();
+            }
             var category = await _context.Categories.FindAsync(id);
 
             if (category == null)
@@ -105,23 +109,60 @@ namespace PetShop.Controllers
 
 
         /// <summary>
-        /// 
+        /// Create category and categorytranslation
         /// </summary>
-        /// <param name="category"></param>
+        /// <param name="createCategoryDto"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
         // POST: api/Category
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Category>> PostCategory(Category category)
+        [ProducesResponseType(typeof(BaseResultWithData<CategoryInfoDto>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseResultBadRequest), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(BaseResultBadRequest), (int)HttpStatusCode.InternalServerError)]
+        public async Task<ActionResult> PostCategory(string? language, [FromBody]CreateCategoryDto createCategoryDto)
         {
-          if (_context.Categories == null)
-          {
-              return Problem("Entity set 'PetShopDbContext.Categories'  is null.");
-          }
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetCategory", new { id = category.Id }, category);
+            if (_context.Categories == null || _context.CategoryTranslations == null)
+            {
+                return StatusCode(500, new BaseBadRequestResult(){Errors = new List<string>(){$"Internal Server Error : Db Category is null!"}});
+            }
+            var category = createCategoryDto.Adapt<Category>();
+            using (var _transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    if ((await _context.Languages.ToListAsync()).Count < 1)
+                    {
+                        _context.Languages.Add(new Language(){
+                            Id = "VN",
+                            IsDefault = true,
+                            Name = "Việt Nam"
+                        });
+                    }
+                    // add category
+                    _context.Categories.Add(category);
+                    await _context.SaveChangesAsync();
+                    // add category translation
+                    var categoryTranslation = createCategoryDto.Adapt<CategoryTranslation>();
+                    categoryTranslation.CategoryId = category.Id;
+                    categoryTranslation.LanguageId = language ?? "VN";
+                    _context.CategoryTranslations.Add(categoryTranslation);
+                    await _context.SaveChangesAsync();
+                    await _transaction.CommitAsync();
+                    var data = categoryTranslation.Adapt<CategoryInfoDto>();
+                    data.Id = category.Id;
+                    return Ok(new BaseResultWithData<CategoryInfoDto>()
+                    {
+                        Result = true,
+                        Message = "Create category success",
+                        Data = data
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await _transaction.RollbackAsync();
+                    return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){$"{ex.Message}"}});
+                }
+            }
         }
 
 

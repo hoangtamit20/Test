@@ -1,4 +1,5 @@
 using System.Net;
+using System.Security.Claims;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -145,17 +146,35 @@ namespace PetShop.Controllers
                 return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Db 'Order' is null!" } });
             }
 
-            using (var _transaction = await _context.Database.BeginTransactionAsync())
+            using (var _transaction = _context.Database.BeginTransaction())
             {
                 try
                 {
                     // process create order
                     var order = createOrderDto.Adapt<Order>();
-                    order.UserId = await _userManager.GetUserIdAsync((await _userManager.GetUserAsync(User))!);
-                    await _context.Orders.AddAsync(order);
-                    order.Status = OrderStatus.InProgress;
-                    await _context.SaveChangesAsync();
-
+                    var claimValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    if (claimValue == null)
+                    {
+                        // Handle the case where the claim is not found
+                        System.Console.WriteLine("skahdahdau");
+                    }
+                    else
+                    {
+                        var user = await _userManager.FindByEmailAsync(claimValue);
+                        if (user == null)
+                        {
+                            // Handle the case where the user is not found
+                            System.Console.WriteLine("đạioiahd");
+                        }
+                        else
+                        {
+                            order.UserId = user.Id;
+                            _context.Orders.Add(order);
+                            order.Status = OrderStatus.InProgress;
+                            await _context.SaveChangesAsync();
+                            // Continue with your logic here
+                        }
+                    }
                     // add product to order details
                     var listOrderDetail = createOrderDto.ListProductOrder.Adapt<List<OrderDetail>>();
                     decimal totalPrice = 0;
@@ -177,7 +196,7 @@ namespace PetShop.Controllers
                     _context.Entry<Order>(order).State = EntityState.Modified;
                     await _context.OrderDetails.AddRangeAsync(listOrderDetail);
                     await _context.SaveChangesAsync();
-                    await _transaction.CommitAsync();
+                    _transaction.Commit();
 
                     return Ok(new BaseResultWithData<OrderInfoDto>
                     {
@@ -188,7 +207,7 @@ namespace PetShop.Controllers
                 }
                 catch (Exception ex)
                 {
-                    await _transaction.RollbackAsync();
+                    _transaction.Rollback();
                     return StatusCode(500, new BaseBadRequestResult() { Errors = new List<string>() { $"Internal Server Error - {ex.Message}" } });
                 }
             }
@@ -257,9 +276,9 @@ namespace PetShop.Controllers
         private List<string> checkValidQuantityOfProductOrder(List<OrderDetailItemsDto> listOrder)
         {
             List<string> Errors = new List<string>();
-            listOrder.ForEach(async or =>
+            listOrder.ForEach(or =>
             {
-                var product = await _context.Products.FindAsync(or.ProductId);
+                var product = _context.Products.Find(or.ProductId);
                 if (product is null)
                 {
                     Errors.Add($"Product with Id : {or.ProductId} does not exists");
@@ -268,7 +287,7 @@ namespace PetShop.Controllers
                 {
                     if (or.Quantity > product.Stock)
                     {
-                        var productName = (await _context.ProductTranslations.FirstOrDefaultAsync(pt => pt.ProductId == product.Id && pt.LanguageId == "VN"))!.Name;
+                        var productName = (_context.ProductTranslations.FirstOrDefault(pt => pt.ProductId == product.Id && pt.LanguageId == "VN"))!.Name;
                         if (product.Stock < 1)
                         {
                             Errors.Add($"Sorry, the store is currently out of product {productName}");

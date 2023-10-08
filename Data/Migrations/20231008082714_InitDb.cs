@@ -244,6 +244,26 @@ namespace PetShop.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Cart",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DateCreated = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cart", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Cart_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Order",
                 columns: table => new
                 {
@@ -254,6 +274,7 @@ namespace PetShop.Data.Migrations
                     ShipAddress = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     ShipEmail = table.Column<string>(type: "varchar(100)", unicode: false, maxLength: 100, nullable: true),
                     ShipPhoneNumber = table.Column<string>(type: "varchar(11)", unicode: false, maxLength: 11, nullable: false),
+                    TotalPrice = table.Column<decimal>(type: "decimal(19,2)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false)
                 },
@@ -354,35 +375,6 @@ namespace PetShop.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Cart",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(19,2)", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "datetime", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
-                    ProductId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Cart", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Cart_Product_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Product",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Cart_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ProductImage",
                 columns: table => new
                 {
@@ -440,6 +432,33 @@ namespace PetShop.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CartItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CartId = table.Column<int>(type: "int", nullable: false),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CartItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CartItems_Cart_CartId",
+                        column: x => x.CartId,
+                        principalTable: "Cart",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CartItems_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OrderDetail",
                 columns: table => new
                 {
@@ -471,8 +490,8 @@ namespace PetShop.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Content = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    Currency = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    PaymentContent = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    PaymentCurrency = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     PaymentRefId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     RequiredAmount = table.Column<decimal>(type: "decimal(19,2)", nullable: true),
                     PaymentDate = table.Column<DateTime>(type: "datetime", nullable: true),
@@ -483,7 +502,7 @@ namespace PetShop.Data.Migrations
                     PaymentLastMessage = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     MerchantId = table.Column<int>(type: "int", nullable: false),
                     PaymentDestinationId = table.Column<int>(type: "int", nullable: false),
-                    PaymentId = table.Column<int>(type: "int", nullable: false)
+                    OrderId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -495,8 +514,8 @@ namespace PetShop.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Payment_Order_PaymentId",
-                        column: x => x.PaymentId,
+                        name: "FK_Payment_Order_OrderId",
+                        column: x => x.OrderId,
                         principalTable: "Order",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -584,14 +603,20 @@ namespace PetShop.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Cart_ProductId",
-                table: "Cart",
-                column: "ProductId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Cart_UserId",
                 table: "Cart",
-                column: "UserId");
+                column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CartItems_CartId",
+                table: "CartItems",
+                column: "CartId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CartItems_ProductId",
+                table: "CartItems",
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CategoryTranslation_CategoryId",
@@ -619,14 +644,14 @@ namespace PetShop.Data.Migrations
                 column: "MerchantId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Payment_OrderId",
+                table: "Payment",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Payment_PaymentDestinationId",
                 table: "Payment",
                 column: "PaymentDestinationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Payment_PaymentId",
-                table: "Payment",
-                column: "PaymentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PaymentDestination_ParentId",
@@ -701,6 +726,20 @@ namespace PetShop.Data.Migrations
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                table: "Users",
+                column: "Email",
+                unique: true,
+                filter: "[Email] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_UserName",
+                table: "Users",
+                column: "UserName",
+                unique: true,
+                filter: "[UserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 table: "Users",
                 column: "NormalizedUserName",
@@ -712,7 +751,7 @@ namespace PetShop.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Cart");
+                name: "CartItems");
 
             migrationBuilder.DropTable(
                 name: "CategoryTranslation");
@@ -755,6 +794,9 @@ namespace PetShop.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Cart");
 
             migrationBuilder.DropTable(
                 name: "Payment");

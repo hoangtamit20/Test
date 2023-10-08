@@ -12,8 +12,8 @@ using PetShop.Data;
 namespace PetShop.Data.Migrations
 {
     [DbContext(typeof(PetShopDbContext))]
-    [Migration("20231005003149_AddTableCartItems")]
-    partial class AddTableCartItems
+    [Migration("20231008121530_UpdateCategory")]
+    partial class UpdateCategory
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -230,6 +230,10 @@ namespace PetShop.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -237,6 +241,10 @@ namespace PetShop.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("UserName")
+                        .IsUnique()
+                        .HasFilter("[UserName] IS NOT NULL");
 
                     b.ToTable("Users", (string)null);
                 });
@@ -259,7 +267,8 @@ namespace PetShop.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Cart");
                 });
@@ -486,6 +495,9 @@ namespace PetShop.Data.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("decimal(19, 2)");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasMaxLength(450)
@@ -527,30 +539,30 @@ namespace PetShop.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Content")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Currency")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
                     b.Property<DateTime?>("ExpireDate")
                         .HasColumnType("datetime");
 
                     b.Property<int>("MerchantId")
                         .HasColumnType("int");
 
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
                     b.Property<decimal?>("PaidAmount")
                         .HasColumnType("decimal(19, 2)");
+
+                    b.Property<string>("PaymentContent")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("PaymentCurrency")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<DateTime?>("PaymentDate")
                         .HasColumnType("datetime");
 
                     b.Property<int>("PaymentDestinationId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PaymentId")
                         .HasColumnType("int");
 
                     b.Property<string>("PaymentLanguage")
@@ -576,9 +588,9 @@ namespace PetShop.Data.Migrations
 
                     b.HasIndex("MerchantId");
 
-                    b.HasIndex("PaymentDestinationId");
+                    b.HasIndex("OrderId");
 
-                    b.HasIndex("PaymentId");
+                    b.HasIndex("PaymentDestinationId");
 
                     b.ToTable("Payment");
                 });
@@ -1064,23 +1076,23 @@ namespace PetShop.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("serverapi.Entity.Order", "Order")
+                        .WithMany("Payments")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("serverapi.Entity.PaymentDestination", "PaymentDestination")
                         .WithMany("Payments")
                         .HasForeignKey("PaymentDestinationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("serverapi.Entity.Order", "PaymentNavigation")
-                        .WithMany("Payments")
-                        .HasForeignKey("PaymentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Merchant");
 
-                    b.Navigation("PaymentDestination");
+                    b.Navigation("Order");
 
-                    b.Navigation("PaymentNavigation");
+                    b.Navigation("PaymentDestination");
                 });
 
             modelBuilder.Entity("serverapi.Entity.PaymentDestination", b =>

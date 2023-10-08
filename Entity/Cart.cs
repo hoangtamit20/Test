@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace serverapi.Entity;
 
@@ -8,7 +7,6 @@ namespace serverapi.Entity;
 /// 
 /// </summary>
 [Table("Cart")]
-[Index("UserId", Name = "AppUser_UserId_CartItems", IsUnique = true)]
 public partial class Cart
 {
     /// <summary>
@@ -41,5 +39,4 @@ public partial class Cart
     /// </summary>
     [InverseProperty("Cart")]
     public virtual ICollection<CartItems> CartItems { get; set; } = new List<CartItems>();
-
 }
