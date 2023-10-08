@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetShop.Data;
 using serverapi.Base;
+using serverapi.Dtos;
 using serverapi.Dtos.Products;
 using serverapi.Entity;
 
@@ -60,7 +61,23 @@ namespace serverapi.Controllers
         [AllowAnonymous]
         [Route("/list-product-info-homepage")]
         [ProducesResponseType(typeof(List<ProductInfoDto>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetAlls(string idLanguage) => Ok(await GetListProductInfoAsync(idLanguage));
+        public async Task<IActionResult> GetAlls(string idLanguage, [FromQuery] PagingFilterDto pagingFilterDto)
+        {
+            var list = await GetListProductInfoAsync(idLanguage);
+            list = list.Skip((pagingFilterDto.PageSize - 1)*pagingFilterDto.PageIndex)
+                .Take(list.Count < pagingFilterDto.PageSize*pagingFilterDto.PageIndex ? 
+                    list.Count : pagingFilterDto.PageIndex * pagingFilterDto.PageSize)
+                .ToList();
+            if (pagingFilterDto.Filter is not null)
+            {
+                list = list.Where(l => l.Name.Contains(pagingFilterDto.Filter) || l.CategoryName.Contains(pagingFilterDto.Filter)).ToList();
+            }
+            if (pagingFilterDto.CategoryId is not null)
+            {
+                list = list.Where(l => l.CategoryId == pagingFilterDto.CategoryId.Value).ToList();
+            }
+            return Ok(list);
+        }
 
 
         /// <summary>
