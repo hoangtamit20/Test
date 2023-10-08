@@ -32,7 +32,7 @@ namespace serverapi.Dtos.Payments
         /// <summary>
         /// 
         /// </summary>
-        public DateTime? PaymentDate { get; set; } = DateTime.Now;
+        public DateTime? PaymentDate { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// 
