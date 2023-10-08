@@ -39,8 +39,9 @@ namespace serverapi.Services
         public async Task<GoogleResponseModel> GetUserInfoAsync(string token)
         {
             // Tạo một request message với phương thức POST và đường dẫn của Google API
-            var request = new HttpRequestMessage(HttpMethod.Post, "https://www.googleapis.com/oauth2/v2/userinfo");
+            // var request = new HttpRequestMessage(HttpMethod.Post, "https://www.googleapis.com/oauth2/v2/userinfo");
 
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://openidconnect.googleapis.com/v1/userinfo");
             // Thêm token vào header của request
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
@@ -54,6 +55,7 @@ namespace serverapi.Services
                 var content = await response.Content.ReadAsStringAsync();
 
                 // Chuyển đổi chuỗi JSON thành đối tượng GoogleResponseModel
+                var a = JsonConvert.DeserializeObject<object>(content);
                 var userInfo = JsonConvert.DeserializeObject<GoogleResponseModel>(content);
 
                 // Trả về đối tượng GoogleResponseModel

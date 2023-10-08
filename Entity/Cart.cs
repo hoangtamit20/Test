@@ -8,6 +8,7 @@ namespace serverapi.Entity;
 /// 
 /// </summary>
 [Table("Cart")]
+[Index("UserId", Name = "AppUser_UserId_CartItems", IsUnique = true)]
 public partial class Cart
 {
     /// <summary>

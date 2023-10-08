@@ -1,11 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace serverapi.Entity;
 /// <summary>
 /// 
 /// </summary>
+[Index("UserName", Name = "AppUser_UserName", IsUnique = true)]
+[Index("Email", Name = "AppUser_Email", IsUnique = true)]
 public partial class AppUser : IdentityUser
 {
     /// <summary>
