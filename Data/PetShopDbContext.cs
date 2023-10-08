@@ -116,12 +116,23 @@ namespace PetShop.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            foreach (var entityType in builder.Model.GetEntityTypes ()) {
+            foreach (var entityType in builder.Model.GetEntityTypes())
+            {
                 var tableName = entityType.GetTableName();
-                if (tableName!.StartsWith ("AspNet")) {
-                    entityType.SetTableName (tableName.Substring (6));
+                if (tableName!.StartsWith("AspNet"))
+                {
+                    entityType.SetTableName(tableName.Substring(6));
                 }
             }
+            builder.Entity<AppUser>()
+                    .HasIndex(u => u.UserName)
+                    .IsUnique();
+            builder.Entity<AppUser>()
+                    .HasIndex(u => u.Email)
+                    .IsUnique();
+            builder.Entity<Cart>()
+                    .HasIndex(c => c.UserId)
+                    .IsUnique();
 
             // builder.Entity<OrderDetail>(entity => entity.HasKey(or => new {or.ProductId, or.OrderId}));
         }
