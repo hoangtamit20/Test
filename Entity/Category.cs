@@ -47,4 +47,10 @@ public partial class Category
     /// </summary>
     [InverseProperty("Category")]
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [InverseProperty("Category")]
+    public virtual ICollection<PromotionCategory> PromotionCategories { get; set; } = new List<PromotionCategory>();
 }

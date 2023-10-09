@@ -83,4 +83,10 @@ public partial class Product
     /// </summary>
     [InverseProperty("Product")]
     public virtual ICollection<ProductTranslation> ProductTranslations { get; set; } = new List<ProductTranslation>();
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [InverseProperty("Product")]
+    public virtual ICollection<PromotionProduct> PromotionProducts { get; set; } = new List<PromotionProduct>();
 }

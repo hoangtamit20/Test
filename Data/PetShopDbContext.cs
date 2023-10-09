@@ -107,6 +107,16 @@ namespace PetShop.Data
         /// 
         /// </summary>
         public virtual DbSet<Promotion> Promotions { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual DbSet<PromotionCategory> PromotionCategories { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual DbSet<PromotionProduct> PromotionProducts { get; set; } = null!;
         #endregion
 
         /// <summary>

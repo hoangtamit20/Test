@@ -17,6 +17,11 @@ namespace serverapi.Dtos.Categories
         /// <summary>
         /// 
         /// </summary>
+        public bool IsShowHome { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public string? SeoDescription { get; set; }
 
         /// <summary>

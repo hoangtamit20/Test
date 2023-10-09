@@ -3,6 +3,7 @@ using System.Text;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -145,6 +146,13 @@ builder.Services.Configure<VnPayConfig>(
                 builder.Configuration.GetSection(VnPayConfig.ConfigName));
 
 
+// add configure the behavior of API responses when the model state is invalid
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.SuppressModelStateInvalidFilter = true;
+});
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -160,7 +168,8 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.UseCors(options => {
+app.UseCors(options =>
+{
     options.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod();
 });
 

@@ -17,12 +17,12 @@ namespace serverapi.Dtos.Payments
         /// <summary>
         /// 
         /// </summary>
-        public string? Currency { get; set; }
+        public string? PaymentCurrency { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public string? PaymentRefId { get; set; }
+        // /// <summary>
+        // /// 
+        // /// </summary>
+        // public string? PaymentRefId { get; set; }
 
         /// <summary>
         /// 

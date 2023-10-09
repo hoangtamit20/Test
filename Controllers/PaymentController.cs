@@ -11,7 +11,6 @@ using serverapi.Dtos.Merchants;
 using serverapi.Dtos.Payments;
 using serverapi.Dtos.Payments.VnPay;
 using serverapi.Entity;
-using serverapi.Enum;
 using serverapi.Helpers;
 
 namespace serverapi.Controllers
@@ -44,14 +43,15 @@ namespace serverapi.Controllers
         /// </summary>
         /// <param name="paymentInfoDto"></param>
         /// <returns></returns>
-        /// /// <remarks>
+        /// <remarks>
         ///     POST : PaymentDestinationId {1 - VNPAY; 2 - MOMO; 3 - ZALOPAY}
         /// {
         ///     "paymentContent": "THANH TOAN DON HANG 0001",
         ///     "paymentCurrency": "VND",
-        ///     "paymentRefId": "ORD1234",
-        ///     "requiredAmount": 10000,
-        ///     "paymentLanguage": "vn",
+        ///     "requiredAmount": 200000,
+        ///     "paymentDate": "2023-10-08T16:24:27.165Z",
+        ///     "expireDate": "2023-10-08T16:24:27.165Z",
+        ///     "paymentLanguage": "VN",
         ///     "merchantId": 1,
         ///     "paymentDestinationId": 1,
         ///     "orderId": 1,
@@ -68,7 +68,7 @@ namespace serverapi.Controllers
                 var payment = paymentInfoDto.Adapt<Payment>();
                 try
                 {
-                    await _context.Payments.AddAsync(payment);
+                    _context.Payments.Add(payment);
                     await _context.SaveChangesAsync();
 
                     var paymentSignature = new PaymentSignature()
@@ -79,7 +79,7 @@ namespace serverapi.Controllers
                         PaymentId = payment.Id,
                         IsValid = true
                     };
-                    await _context.PaymentSignatures.AddAsync(paymentSignature);
+                    _context.PaymentSignatures.Add(paymentSignature);
                     await _context.SaveChangesAsync();
                     await _transaction.CommitAsync();
                     
@@ -94,7 +94,7 @@ namespace serverapi.Controllers
                                 DateTime.UtcNow,
                                 _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? string.Empty,
                                 paymentInfoDto.RequiredAmount ?? 0,
-                                paymentInfoDto.Currency ?? string.Empty,
+                                paymentInfoDto.PaymentCurrency ?? string.Empty,
                                 "other",
                                 paymentInfoDto.PaymentContent,
                                 _vnpayConfig.ReturnUrl,

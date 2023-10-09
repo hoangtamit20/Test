@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using serverapi.Enum;
 
 namespace serverapi.Entity;
 
@@ -18,12 +19,13 @@ public partial class Promotion
     /// <summary>
     /// 
     /// </summary>
-    [StringLength(150)]
-    public string Name { get; set; } = null!;
+    [StringLength(200)]
+    public required string Name { get; set; }
 
     /// <summary>
     /// 
     /// </summary>
+
     [Column(TypeName = "datetime")]
     public DateTime FromDate { get; set; }
 
@@ -41,28 +43,30 @@ public partial class Promotion
     /// <summary>
     /// 
     /// </summary>
-    public int? DiscountPercent { get; set; }
+    [Column(TypeName = "decimal(19, 2)")]
+    public decimal DiscountValue { get; set; }
 
     /// <summary>
     /// 
     /// </summary>
-    public int? DiscountAmount { get; set; }
+    public DiscountType DiscountType { get; set; }
 
     /// <summary>
     /// 
     /// </summary>
-    [StringLength(4000)]
-    public string? ProductIds { get; set; }
+    public Status Status { get; set; }
 
+    // Use many-to-many relationship with Product
     /// <summary>
     /// 
     /// </summary>
-    [StringLength(4000)]
-    public string? ProductCategoryIds { get; set; }
+    [InverseProperty("Promotion")]
+    public virtual ICollection<PromotionProduct> PromotionProducts { get; set; } = new List<PromotionProduct>();
 
+    // Use many-to-many relationship with Category
     /// <summary>
     /// 
     /// </summary>
-    [StringLength(50)]
-    public string Status { get; set; } = null!;
+    [InverseProperty("Promotion")]
+    public virtual ICollection<PromotionCategory> PromotionCategories { get; set; } = new List<PromotionCategory>();
 }

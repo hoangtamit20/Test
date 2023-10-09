@@ -129,6 +129,7 @@ namespace PetShop.Controllers
         [ProducesResponseType(typeof(BaseResultWithData<OrderInfoDto>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.InternalServerError)]
         public async Task<ActionResult> PostOrder([FromBody] CreateOrderDto createOrderDto)
         {
@@ -156,7 +157,7 @@ namespace PetShop.Controllers
                     if (claimValue == null)
                     {
                         // Handle the case where the claim is not found
-                        System.Console.WriteLine("skahdahdau");
+                        return Unauthorized(new BaseBadRequestResult() { Errors = new List<string>() { $"the claim is not found" } });
                     }
                     else
                     {
@@ -164,7 +165,7 @@ namespace PetShop.Controllers
                         if (user == null)
                         {
                             // Handle the case where the user is not found
-                            System.Console.WriteLine("đạioiahd");
+                            return Unauthorized(new BaseBadRequestResult() { Errors = new List<string>() { $"User information not found" } });
                         }
                         else
                         {

@@ -28,11 +28,11 @@ public partial class Payment
     [StringLength(10)]
     public string? PaymentCurrency { get; set; }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    [StringLength(50)]
-    public string? PaymentRefId { get; set; }
+    // /// <summary>
+    // /// 
+    // /// </summary>
+    // [StringLength(50)]
+    // public string? PaymentRefId { get; set; }
 
     /// <summary>
     /// 
