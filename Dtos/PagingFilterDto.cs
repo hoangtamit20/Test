@@ -20,7 +20,6 @@ namespace serverapi.Dtos
         /// </summary>
         public int PageSize { get; set; } = 10;
 
-
         /// <summary>
         /// 
         /// </summary>

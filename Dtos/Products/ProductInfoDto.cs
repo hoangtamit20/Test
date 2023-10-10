@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using serverapi.Dtos.Promotions;
 using serverapi.Entity;
 
 namespace serverapi.Dtos.Products
@@ -12,71 +13,61 @@ namespace serverapi.Dtos.Products
         /// 
         /// </summary>
         public int Id { get; set; }
-
         /// <summary>
         /// 
         /// </summary>
-        [StringLength(60)]
-        public string Name { get; set; } = null!;
-
+        public required string Name { get; set; }
         /// <summary>
         /// 
         /// </summary>
         public decimal Price { get; set; }
-
         /// <summary>
-        /// giá gốc
+        /// 
         /// </summary>
         public decimal OriginalPrice { get; set; }
-
         /// <summary>
-        /// số lượng còn trong kho
+        /// 
         /// </summary>
         public int Stock { get; set; }
-
         /// <summary>
         /// 
         /// </summary>
         public int CategoryId { get; set; }
-
         /// <summary>
         /// 
         /// </summary>
-        public string CategoryName { get; set; } = null!;
-
+        public string? CategoryName { get; set; }
         /// <summary>
-        /// mô tả sản phẩm
+        /// 
         /// </summary>
-        [StringLength(500)]
         public string? Description { get; set; }
-
         /// <summary>
-        /// Chi tiết sản phẩm
+        /// 
         /// </summary>
-        [StringLength(255)]
         public string? Details { get; set; }
-
         /// <summary>
         /// 
         /// </summary>
-        [StringLength(500)]
         public string? SeoDescription { get; set; }
-
         /// <summary>
         /// 
         /// </summary>
-        [StringLength(200)]
         public string? SeoTitle { get; set; }
-
         /// <summary>
         /// 
         /// </summary>
-        [StringLength(255)]
         public string? SeoAlias { get; set; }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        public decimal TotalPriceDiscount { get; set; }
         /// <summary>
         /// 
         /// </summary>
         public List<ProductImageDtos> ListProductImage { get; set; } = new List<ProductImageDtos>();
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<PromotionDto>? ListDiscount { get; set; } = new List<PromotionDto>();
     }
 }

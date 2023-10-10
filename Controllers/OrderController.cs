@@ -188,10 +188,12 @@ namespace PetShop.Controllers
                             listError.Add($"Product with Id : {orderDetail.ProductId} does not exists");
                             continue;
                         }
+                        // check product has apply discount
 
+                        var price = product.Price - (await GetPriceProductOrder(product));
                         orderDetail.OrderId = order.Id;
-                        totalPrice += product.Price * orderDetail.Quantity;
-                        orderDetail.SubTotal = product.Price * orderDetail.Quantity;
+                        totalPrice += price * orderDetail.Quantity;
+                        orderDetail.SubTotal = price * orderDetail.Quantity;
                     }
                     order.TotalPrice = totalPrice;
                     _context.Entry<Order>(order).State = EntityState.Modified;
@@ -249,26 +251,6 @@ namespace PetShop.Controllers
             }
         }
 
-        // // DELETE: api/Order/5
-        // [HttpDelete("{id}")]
-        // public async Task<IActionResult> DeleteOrder(int id)
-        // {
-        //     if (_context.Orders == null)
-        //     {
-        //         return NotFound();
-        //     }
-        //     var order = await _context.Orders.FindAsync(id);
-        //     if (order == null)
-        //     {
-        //         return NotFound();
-        //     }
-
-        //     _context.Orders.Remove(order);
-        //     await _context.SaveChangesAsync();
-
-        //     return NoContent();
-        // }
-
         private bool OrderExists(int id)
         {
             return (_context.Orders?.Any(e => e.Id == id)).GetValueOrDefault();
@@ -301,6 +283,36 @@ namespace PetShop.Controllers
                 }
             });
             return Errors;
+        }
+
+
+        private async Task<decimal> GetPriceProductOrder(Product product)
+        {
+            var currentDate = DateTime.Now;
+            var productIsDiscount = await _context.Products
+                .Include(p => p.PromotionProducts).ThenInclude(pp => pp.Promotion)
+                .Include(p => p.Category).ThenInclude(c => c.PromotionCategories).ThenInclude(pc => pc.Promotion)
+                .Where(p =>
+                    (p.PromotionProducts.Any(pp => pp.Promotion!.FromDate <= currentDate && pp.Promotion.ToDate >= currentDate)
+                    || p.Category.PromotionCategories.Any(pc => pc.Promotion!.FromDate <= currentDate && pc.Promotion.ToDate >= currentDate))
+                    && p.Id == product.Id
+                )
+                .Select(p => new
+                {
+                    TotalPriceProductDiscount = p.PromotionProducts.Where(pp => pp.Promotion!.FromDate <= currentDate && pp.Promotion.ToDate >= currentDate)
+                        .Select(pp => new
+                        {
+                            PriceDisounted = pp.Promotion!.DiscountType == DiscountType.Percent ? ((pp.Promotion.DiscountValue > 1 ? (pp.Promotion.DiscountValue / 100) : pp.Promotion.DiscountValue) * p.Price) : pp.Promotion.DiscountValue
+                        }).Union(
+                        p.Category.PromotionCategories.Where(pc => pc.Promotion!.FromDate <= currentDate && pc.Promotion.ToDate >= currentDate)
+                        .Select(pc => new
+                        {
+                            PriceDisounted = pc.Promotion!.DiscountType == DiscountType.Percent ? ((pc.Promotion.DiscountValue > 1 ? (pc.Promotion.DiscountValue / 100) : pc.Promotion.DiscountValue) * p.Price) : pc.Promotion.DiscountValue
+                        }))
+                        .Sum(l => l.PriceDisounted)
+                }).FirstOrDefaultAsync();
+
+            return productIsDiscount is null ? 0 : productIsDiscount.TotalPriceProductDiscount;
         }
     }
 }

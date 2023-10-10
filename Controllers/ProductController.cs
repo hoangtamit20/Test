@@ -8,6 +8,7 @@ using serverapi.Base;
 using serverapi.Dtos;
 using serverapi.Dtos.Products;
 using serverapi.Entity;
+using serverapi.Enum;
 using serverapi.Services.PagingAndFilterService;
 
 namespace serverapi.Controllers
@@ -35,53 +36,115 @@ namespace serverapi.Controllers
         /// </summary>
         /// <returns></returns>
         /// <remarks>
-        ///     GET : Api được public cho bất kỳ ai
-        /// {
-        ///     "Id" : "Mã sản phẩm",
-        ///     "Name" : "Tên sản phẩm"
-        /// }
         /// </remarks>
         [HttpGet]
         [AllowAnonymous]
         [Route("/list-product-info-homepage")]
-        [ProducesResponseType(typeof(List<ProductInfoDto>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetAlls() => Ok(await getMa("VN"));
+        [ProducesResponseType(typeof(BasePagingData<List<ProductInfoDto>>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetAlls()
+        {
+            var pagingService = new PagingFilterDto();
+            var data = await GetListProductsAsync("VN");
+            var totalPage = (int)Math.Ceiling((double)data.Count / pagingService.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)data.Count / pagingService.PageSize);
+            return Ok(new BasePagingData<List<ProductInfoDto>>()
+            {
+                Result = true,
+                Message = "List Product",
+                Data = data,
+                TotalPage = totalPage
+            });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("/list-product-discount")]
+        [ProducesResponseType(typeof(BasePagingData<List<ProductInfoDto>>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetAllProductDiscount()
+        {
+            
+            var pagingFilterDto = new PagingFilterDto();
+            var data = await GetListProductDiscountAsync("VN");
+            var totalPage = (int)Math.Ceiling((double)data.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)data.Count / pagingFilterDto.PageSize);
+            var service = new PagingFilterService<ProductInfoDto>();
+            var filteredAndPagedProducts = service.FilterAndPage(data, pagingFilterDto,
+                product => product.Name.Contains(pagingFilterDto.Filter!) || product.CategoryName!.Contains(pagingFilterDto.Filter!),
+                product => product.Name);
+            return Ok(new BasePagingData<List<ProductInfoDto>>()
+            {
+                Result = true,
+                Message = "List Product Discount",
+                TotalPage = totalPage,
+                Data = filteredAndPagedProducts,
+            });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("/list-product-no-discount")]
+        [ProducesResponseType(typeof(BasePagingData<List<ProductInfoDto>>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetAllProductNoDiscount()
+        {
+            var pagingFilterDto = new PagingFilterDto();
+            var data = await GetListProductNoDiscountAsync("VN");
+            var totalPage = (int)Math.Ceiling((double)data.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)data.Count / pagingFilterDto.PageSize);
+            var service = new PagingFilterService<ProductInfoDto>();
+            var filteredAndPagedProducts = service.FilterAndPage(data, pagingFilterDto,
+                product => product.Name.Contains(pagingFilterDto.Filter!) || product.CategoryName!.Contains(pagingFilterDto.Filter!),
+                product => product.Name);
+            return Ok(new BasePagingData<List<ProductInfoDto>>()
+            {
+                Result = true,
+                Message = "List Product No Discount",
+                TotalPage = totalPage,
+                Data = filteredAndPagedProducts,
+            });
+        }
 
         /// <summary>
         /// List info of all product use display home page with choosed language (AllowAnonymous)
         /// </summary>
+        /// <param name="idLanguage">The laguage id want to display</param>
+        /// <param name="pagingFilterDto"></param>
         /// <returns></returns>
         /// <remarks>
-        ///     POST : Api được public cho bất kỳ ai
+        ///     POST :
         /// {
-        ///     "Id" : "Mã sản phẩm",
-        ///     "Name" : "Tên sản phẩm"
+        ///     "filter": "enter string to want filter",
+        ///     "pageIndex": Index of page want to display,
+        ///     "pageSize": Length of item want to display,
+        ///     "categoryId": filter by Category Id
         /// }
         /// </remarks>
         [HttpPost]
         [AllowAnonymous]
         [Route("/list-product-info-homepage")]
-        [ProducesResponseType(typeof(List<ProductInfoDto>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BasePagingData<List<ProductInfoDto>>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAlls(string? idLanguage, [FromQuery] PagingFilterDto pagingFilterDto)
         {
-            var list = await GetListProductInfoAsync(idLanguage!);
-            var service = new PagingFilterService<ProductInfoDto>();
-            var filteredAndPagedProducts = service.FilterAndPage(list, pagingFilterDto,
-                product => product.Name.Contains(pagingFilterDto.Filter) || product.CategoryName.Contains(pagingFilterDto.Filter),
-                product => product.Name);
+            idLanguage = idLanguage ?? "VN";
+            var data = await GetListProductsAsync(idLanguage);
+            var totalPage = (int)Math.Ceiling((double)data.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)data.Count / pagingFilterDto.PageSize);
 
-            list = list.Skip(pagingFilterDto.PageSize * (pagingFilterDto.PageIndex - 1))
-                .Take(pagingFilterDto.PageSize)
-                .ToList();
-            if (pagingFilterDto.Filter is not null)
+            var service = new PagingFilterService<ProductInfoDto>();
+            var filteredAndPagedProducts = service.FilterAndPage(data, pagingFilterDto,
+                product => product.Name.Contains(pagingFilterDto.Filter!) || product.CategoryName!.Contains(pagingFilterDto.Filter!),
+                product => product.Name);
+            return Ok(new BasePagingData<List<ProductInfoDto>>()
             {
-                list = list.Where(l => l.Name.Contains(pagingFilterDto.Filter) || l.CategoryName.Contains(pagingFilterDto.Filter)).ToList();
-            }
-            if (pagingFilterDto.CategoryId is not null)
-            {
-                list = list.Where(l => l.CategoryId == pagingFilterDto.CategoryId.Value).ToList();
-            }
-            return Ok(list);
+                Result = true,
+                Message = "List Product",
+                TotalPage = totalPage,
+                Data = filteredAndPagedProducts,
+            });
         }
 
 
@@ -116,7 +179,7 @@ namespace serverapi.Controllers
             {
                 return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"ProductTranslation with IdProduct : {id} not found" } });
             }
-            return Ok((await GetListProductInfoAsync(idLanguage)).Find(p => p.Id == id));
+            return Ok((await GetListProductsAsync(idLanguage)).Find(p => p.Id == id));
         }
 
         /// <summary>
@@ -303,75 +366,101 @@ namespace serverapi.Controllers
             }
         }
 
-        private async Task<List<ProductInfoDto>> GetListProductInfoAsync(string idLanguage)
+        private async Task<List<ProductInfoDto>> GetListProductNoDiscountAsync(string? language)
+            => await GetListProductIsDiscountAsync(language, false);
+
+        private async Task<List<ProductInfoDto>> GetListProductDiscountAsync(string? language)
+            => await GetListProductIsDiscountAsync(language, true);
+
+        private async Task<List<ProductInfoDto>> GetListProductsAsync(string? language)
         {
-            var query = _dbContext.Products
-                        .Join(_dbContext.ProductTranslations, p => p.Id, pl => pl.ProductId, (p, pl) => new { Products = p, ProductTrans = pl })
-                        .AsQueryable();
-            if (idLanguage != null)
-            {
-                query = query.Where(group => group.ProductTrans.LanguageId == idLanguage);
-            }
-
-            var listProductInfo = await query
-                .Select(group => new ProductInfoDto
-                {
-                    Id = group.Products.Id,
-                    Name = group.ProductTrans.Name,
-                    Price = group.Products.Price,
-                    OriginalPrice = group.Products.OriginalPrice,
-                    Stock = group.Products.Stock,
-                    CategoryId = group.Products.CategoryId,
-                    CategoryName = group.Products.Category.CategoryTranslations.Where(c => c.Id == group.Products.CategoryId).FirstOrDefault()!.Name!,
-                    Description = group.ProductTrans.Description,
-                    Details = group.ProductTrans.Details,
-                    SeoDescription = group.ProductTrans.SeoDescription,
-                    SeoTitle = group.ProductTrans.SeoTitle,
-                    SeoAlias = group.ProductTrans.SeoAlias,
-                    ListProductImage = group.Products.ProductImages.Where(img => img.ProductId == group.Products.Id).Select(p => new ProductImageDtos
-                    {
-                        Id = p.Id,
-                        ImageUrl = p.ImagePath
-                    }).ToList(),
-                }).ToListAsync();
-
-            return listProductInfo;
+            var a = await GetListProductIsDiscountAsync(language, true);
+            var b = await GetListProductIsDiscountAsync(language, false);
+            a.AddRange(b);
+            return a;
         }
-
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="idLanguage"></param>
+        /// <param name="language">LanguageId to display</param>
+        /// <param name="isDiscount">False : List product non discount; True : Listproduct discount</param>
         /// <returns></returns>
-        private async Task<List<ProductInfoDto>> getMa(string idLanguage)
+        private async Task<List<ProductInfoDto>> GetListProductIsDiscountAsync(string? language, bool isDiscount)
         {
-            var listProductInfo = await _dbContext.Products
-            .Include(p => p.ProductTranslations)
-            .Include(p => p.Category)
-            .ThenInclude(c => c.CategoryTranslations)
-            .Include(p => p.ProductImages)
-            .AsNoTracking()
-            .AsSplitQuery()
-            .Where(p => p.ProductTranslations.Any(pt => pt.LanguageId == idLanguage))
-            .Select(p => new ProductInfoDto
-            {
-                Id = p.Id,
-                Name = p.ProductTranslations.FirstOrDefault(pt => pt.LanguageId == idLanguage)!.Name,
-                Price = p.Price,
-                OriginalPrice = p.OriginalPrice,
-                Stock = p.Stock,
-                CategoryId = p.CategoryId,
-                CategoryName = p.Category.CategoryTranslations.FirstOrDefault(ct => ct.LanguageId == idLanguage)!.Name!,
-                Description = p.ProductTranslations.FirstOrDefault(pt => pt.LanguageId == idLanguage)!.Description,
-                Details = p.ProductTranslations.FirstOrDefault(pt => pt.LanguageId == idLanguage)!.Details,
-                SeoDescription = p.ProductTranslations.FirstOrDefault(pt => pt.LanguageId == idLanguage)!.SeoDescription,
-                SeoTitle = p.ProductTranslations.FirstOrDefault(pt => pt.LanguageId == idLanguage)!.SeoTitle,
-                SeoAlias = p.ProductTranslations.FirstOrDefault(pt => pt.LanguageId == idLanguage)!.SeoAlias,
-                ListProductImage = p.ProductImages.Select(pi => new ProductImageDtos { Id = pi.Id, ImageUrl = pi.ImagePath }).ToList()
-            })
-            .ToListAsync();
-            return listProductInfo;
+            language = language ?? "VN";
+            var currentDate = DateTime.Now;
+
+            var discountedProducts = await _dbContext.Products
+                .Include(p => p.ProductTranslations)
+                .ThenInclude(pt => pt.Language)
+                .Include(p => p.ProductImages)
+                .Include(p => p.PromotionProducts)
+                .ThenInclude(pp => pp.Promotion)
+                .Include(p => p.Category)
+                .ThenInclude(c => c.CategoryTranslations)
+                .ThenInclude(ct => ct.Language)
+                .Include(p => p.Category.PromotionCategories).ThenInclude(pr => pr.Promotion)
+                .Where(p => (p.PromotionProducts.Any(pp => pp.Promotion!.FromDate <= currentDate && pp.Promotion.ToDate >= currentDate) ||
+                            p.Category.PromotionCategories.Any(pc => pc.Promotion!.FromDate <= currentDate && pc.Promotion.ToDate >= currentDate)) == isDiscount)
+                .Select(p => new ProductInfoDto
+                {
+                    Id = p.Id,
+                    Name = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.Name,
+                    Price = p.Price,
+                    OriginalPrice = p.OriginalPrice,
+                    Stock = p.Stock,
+                    CategoryId = p.CategoryId,
+                    CategoryName = p.Category.CategoryTranslations.FirstOrDefault(ct => ct.LanguageId == language)!.Name!,
+                    Description = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.Description,
+                    Details = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.Details,
+                    SeoDescription = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.SeoDescription,
+                    SeoTitle = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.SeoTitle,
+                    SeoAlias = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.SeoAlias,
+                    ListProductImage = p.ProductImages.Select(pi => new ProductImageDtos
+                    {
+                        Id = pi.Id,
+                        ImageUrl = pi.ImagePath
+                    }).ToList(),
+                    // ListDiscount = !isDiscount ? null : p.PromotionProducts.Where(pp => pp.Promotion!.FromDate <= currentDate && pp.Promotion.ToDate >= currentDate)
+                    //     .Select(pp => new PromotionDto
+                    //     {
+                    //         PromotionId = pp.Promotion!.Id,
+                    //         PromotionName = pp.Promotion.Name,
+                    //         FromDate = pp.Promotion.FromDate,
+                    //         ToDate = pp.Promotion.ToDate,
+                    //         DiscountType = pp.Promotion.DiscountType,
+                    //         DiscountValue = pp.Promotion.DiscountValue,
+                    //         PriceDisounted = pp.Promotion.DiscountType == DiscountType.Percent ? ((pp.Promotion.DiscountValue > 1 ? (pp.Promotion.DiscountValue / 100) : pp.Promotion.DiscountValue) * p.Price) : pp.Promotion.DiscountValue
+                    //     }).Union(
+                    //     p.Category.PromotionCategories.Where(pc => pc.Promotion!.FromDate <= currentDate && pc.Promotion.ToDate >= currentDate)
+                    //     .Select(pc => new PromotionDto
+                    //     {
+                    //         PromotionId = pc.Promotion!.Id,
+                    //         PromotionName = pc.Promotion.Name,
+                    //         FromDate = pc.Promotion.FromDate,
+                    //         ToDate = pc.Promotion.ToDate,
+                    //         DiscountType = pc.Promotion.DiscountType,
+                    //         DiscountValue = pc.Promotion.DiscountValue,
+                    //         PriceDisounted = pc.Promotion.DiscountType == DiscountType.Percent ? ((pc.Promotion.DiscountValue > 1 ? (pc.Promotion.DiscountValue / 100) : pc.Promotion.DiscountValue) * p.Price) : pc.Promotion.DiscountValue
+                    //     }))
+                    //     .ToList(),
+                    TotalPriceDiscount = !isDiscount ? 0 : p.PromotionProducts.Where(pp => pp.Promotion!.FromDate <= currentDate && pp.Promotion.ToDate >= currentDate)
+                        .Select(pp => new
+                        {
+                            PriceDisounted = pp.Promotion!.DiscountType == DiscountType.Percent ? ((pp.Promotion.DiscountValue > 1 ? (pp.Promotion.DiscountValue / 100) : pp.Promotion.DiscountValue) * p.Price) : pp.Promotion.DiscountValue
+                        }).Union(
+                        p.Category.PromotionCategories.Where(pc => pc.Promotion!.FromDate <= currentDate && pc.Promotion.ToDate >= currentDate)
+                        .Select(pc => new
+                        {
+                            PriceDisounted = pc.Promotion!.DiscountType == DiscountType.Percent ? ((pc.Promotion.DiscountValue > 1 ? (pc.Promotion.DiscountValue / 100) : pc.Promotion.DiscountValue) * p.Price) : pc.Promotion.DiscountValue
+                        }))
+                        .Sum(l => l.PriceDisounted)
+                })
+                .OrderBy(p => p.Id)
+                .ThenBy(p => p.CategoryId)
+                .ToListAsync();
+            return discountedProducts;
         }
     }
 }
