@@ -42,11 +42,11 @@ namespace serverapi.Dtos.Payments
         /// <summary>
         /// 
         /// </summary>
-        public string? MerchantId { get; set; } = string.Empty;
+        public int MerchantId { get; set; }
         /// <summary>
         /// 
         /// </summary>
-        public string? PaymentDestinationId { get; set; } = string.Empty;
+        public int PaymentDestinationId { get; set; }
         /// <summary>
         /// 
         /// </summary>

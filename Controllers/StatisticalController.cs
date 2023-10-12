@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using PetShop.Data;
-using serverapi.Enum;
 
 namespace serverapi.Controllers
 {

@@ -539,6 +539,12 @@ namespace PetShop.Data.Migrations
                     b.Property<DateTime?>("ExpireDate")
                         .HasColumnType("datetime");
 
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastUpdateBy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("MerchantId")
                         .HasColumnType("int");
 
@@ -746,12 +752,11 @@ namespace PetShop.Data.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("TranPayload")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("TranStatus")
+                    b.Property<string>("TranStatus")
                         .HasMaxLength(10)
-                        .HasColumnType("int");
+                        .HasColumnType("nvarchar(10)");
 
                     b.HasKey("Id");
 

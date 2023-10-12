@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Transactions;
 namespace serverapi.Entity;
 
 /// <summary>
@@ -24,14 +23,13 @@ public partial class PaymentTransaction
     /// <summary>
     /// 
     /// </summary>
-    [StringLength(500)]
     public string? TranPayload { get; set; }
 
     /// <summary>
     /// 
     /// </summary>
     [StringLength(10)]
-    public TransactionStatus TranStatus { get; set; }
+    public string? TranStatus { get; set; }
 
     /// <summary>
     /// 

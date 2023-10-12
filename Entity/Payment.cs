@@ -79,6 +79,16 @@ public partial class Payment
     /// <summary>
     /// 
     /// </summary>
+    public DateTime? LastUpdateAt { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string? LastUpdateBy { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
     public int MerchantId { get; set; }
 
     /// <summary>
