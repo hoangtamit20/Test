@@ -45,7 +45,7 @@ namespace PetShop.Controllers
             var listMerchant = await _context.Merchants.ToListAsync();
             var result = new BaseResultWithData<List<MerchantInfoDto>>()
             {
-                Result = true,
+                Success = true,
                 Message = "List of Merchant",
                 Data = listMerchant.Adapt<List<MerchantInfoDto>>()
             };
@@ -164,7 +164,7 @@ namespace PetShop.Controllers
         [HttpPost]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType(typeof(BaseResultBadRequest), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(BaseResultWithData<CreateMerchantDto>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<PaymentDestination>> CreatePaymentDestination(CreateMerchantDto createMerchantDto)
         {
@@ -180,7 +180,7 @@ namespace PetShop.Controllers
                 return Ok(
                     new BaseResultWithData<CreateMerchantDto>()
                     {
-                        Result = true,
+                        Success = true,
                         Message = "Create Merchant",
                         Data = createMerchantDto
                     }
@@ -206,12 +206,12 @@ namespace PetShop.Controllers
         {
             if (_context.Merchants == null)
             {
-                return NotFound(new BaseResultBadRequest(){Errors = new List<string>(){$"Table Merchant is null!"}});
+                return NotFound(new BaseBadRequestResult(){Errors = new List<string>(){$"Table Merchant is null!"}});
             }
             var merchant = await _context.Merchants.FindAsync(id);
             if (merchant == null)
             {
-                return NotFound(new BaseResultBadRequest(){Errors = new List<string>(){$"Merchant with id : {id} not found!"}});
+                return NotFound(new BaseBadRequestResult(){Errors = new List<string>(){$"Merchant with id : {id} not found!"}});
             }
 
             _context.Merchants.Remove(merchant);

@@ -70,7 +70,7 @@ namespace PetShop.Controllers
                 .ToList();
             return Ok(new BaseResultWithData<List<CategoryInfoDto>>()
             {
-                Result = true,
+                Success = true,
                 Message = "List categorie",
                 Data = listCategories
             });
@@ -120,7 +120,7 @@ namespace PetShop.Controllers
                     .ToList();
                 return Ok(new BaseResultWithData<List<CategoryInfoDto>>()
                 {
-                    Result = true,
+                    Success = true,
                     Message = "List categorie",
                     Data = listCategories
                 });
@@ -141,7 +141,7 @@ namespace PetShop.Controllers
         // GET: api/Category/5
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(BaseResultWithData<CategoryInfoDto>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseResultBadRequest), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
 
         public async Task<ActionResult> GetCategory(int id)
         {
@@ -157,7 +157,7 @@ namespace PetShop.Controllers
             }
             return Ok(new BaseResultWithData<CategoryInfoDto>()
             {
-                Result = true,
+                Success = true,
                 Message = $"Cagegory with id : {id}",
                 Data = category.Adapt<CategoryInfoDto>()
             });
@@ -173,13 +173,13 @@ namespace PetShop.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         // [Authorize(Roles = "Admin")]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(BaseResultBadRequest), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PutCategory(int id, UpdateCategoyDto updateCategoyDto)
         {
             if (id != updateCategoyDto.Id)
             {
-                return BadRequest(new BaseResultBadRequest() { Errors = new List<string>() { $"The Id : {id} is not valid with category id : {updateCategoyDto.Id}" } });
+                return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"The Id : {id} is not valid with category id : {updateCategoyDto.Id}" } });
             }
             var category = updateCategoyDto.Adapt<Category>();
             var categoryTranslation = updateCategoyDto.Adapt<CategoryTranslation>();
@@ -214,8 +214,8 @@ namespace PetShop.Controllers
         // POST: api/Category
         [HttpPost]
         [ProducesResponseType(typeof(BaseResultWithData<CategoryInfoDto>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseResultBadRequest), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(BaseResultBadRequest), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.InternalServerError)]
         public async Task<ActionResult> PostCategory(string? language, [FromBody] CreateCategoryDto createCategoryDto)
         {
             if (_context.Categories == null || _context.CategoryTranslations == null)
@@ -250,7 +250,7 @@ namespace PetShop.Controllers
                     data.Id = category.Id;
                     return Ok(new BaseResultWithData<CategoryInfoDto>()
                     {
-                        Result = true,
+                        Success = true,
                         Message = "Create category success",
                         Data = data
                     });
@@ -271,6 +271,7 @@ namespace PetShop.Controllers
         /// <returns></returns>
         // DELETE: api/Category/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             if (_context.Categories == null)
@@ -287,11 +288,6 @@ namespace PetShop.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private bool CategoryExists(int id)
-        {
-            return (_context.Categories?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

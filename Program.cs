@@ -142,8 +142,12 @@ builder.Services.AddScoped<IValidator<Product>, ProductValidator>();
 builder.Services.AddHttpContextAccessor();
 
 // add payment method service
+    //vnpay service
 builder.Services.Configure<VnPayConfig>(
-                builder.Configuration.GetSection(VnPayConfig.ConfigName));
+    builder.Configuration.GetSection(VnPayConfig.ConfigName));
+    // momo service
+builder.Services.Configure<MomoConfig>(
+    builder.Configuration.GetSection(MomoConfig.ConfigName));
 
 
 // add configure the behavior of API responses when the model state is invalid

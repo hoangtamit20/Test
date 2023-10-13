@@ -13,25 +13,10 @@ namespace serverapi.Base
         /// <summary>
         /// 
         /// </summary>
-        public bool? Result { get; set; } = null!;
+        public bool? Success { get; set; } = null!;
         /// <summary>
         /// 
         /// </summary>
         public string? Message { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public List<BaseError> Errors { get; set; } = new List<BaseError>();
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        /// <param name="message"></param>
-        public void Set(bool result, string message)
-        {
-            this.Result = result;
-            this.Message = message; 
-        }
     }
 }

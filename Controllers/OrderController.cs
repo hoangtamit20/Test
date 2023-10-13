@@ -41,7 +41,7 @@ namespace PetShop.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(typeof(List<OrderInfoDto>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseResultWithData<List<OrderInfoDto>>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
         public async Task<ActionResult> GetOrders()
         {
@@ -49,7 +49,12 @@ namespace PetShop.Controllers
             {
                 return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Db 'Order' is null!" } });
             }
-            return Ok((await _context.Orders.ToListAsync()).Adapt<List<OrderInfoDto>>());
+            return Ok(new BaseResultWithData<List<OrderInfoDto>>()
+            {
+                Success = true,
+                Message = "List orders",
+                Data = (await _context.Orders.ToListAsync()).Adapt<List<OrderInfoDto>>()
+            });
         }
 
         /// <summary>
@@ -59,7 +64,7 @@ namespace PetShop.Controllers
         /// <returns></returns>
         // GET: api/Order/5
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(OrderInfoDto), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseResultWithData<OrderInfoDto>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
         public async Task<ActionResult> GetOrder(int id)
         {
@@ -73,7 +78,12 @@ namespace PetShop.Controllers
             {
                 return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Order with id : {id} not found!" } });
             }
-            return Ok(order.Adapt<OrderInfoDto>());
+            return Ok(new BaseResultWithData<OrderInfoDto>()
+            {
+                Success = true,
+                Message = "Get order by id",
+                Data = order.Adapt<OrderInfoDto>()
+            });
         }
 
 
@@ -203,7 +213,7 @@ namespace PetShop.Controllers
 
                     return Ok(new BaseResultWithData<OrderInfoDto>
                     {
-                        Result = true,
+                        Success = true,
                         Message = "Create Order",
                         Data = order.Adapt<OrderInfoDto>()
                     });

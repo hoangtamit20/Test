@@ -71,7 +71,12 @@ namespace serverapi.Controllers
                     Price = ct.Product.Price,
                     Quantity = ct.Quantity
                 }).ToListAsync();
-            return Ok(cartItems);
+            return Ok(new BaseResultWithData<List<CartInfoDto>>()
+            {
+                Success = true,
+                Message = "List cart items",
+                Data = cartItems
+            });
         }
 
 
@@ -255,7 +260,7 @@ namespace serverapi.Controllers
         {
             var cartItems = await _context.CartItems.FindAsync(id);
             if (cartItems is null)
-                return NotFound(new BaseBadRequestResult(){Errors = new List<string>(){""}});
+                return NotFound(new BaseBadRequestResult(){Errors = new List<string>(){"Db cart items is null!"}});
             try
             {
                 _context.CartItems.Remove(cartItems);

@@ -46,7 +46,8 @@ namespace PetShop.Controllers
             var listPaymentDestination = await _context.PaymentDestinations.ToListAsync();
             var result = new BaseResultWithData<List<PaymentDesInfoDto>>()
             {
-                Result = true,
+                
+                Success = true,
                 Message = "List of Paymentdestination",
                 Data = listPaymentDestination.Adapt<List<PaymentDesInfoDto>>()
             };
@@ -75,7 +76,12 @@ namespace PetShop.Controllers
                 return NotFound(new BaseBadRequestResult(){Errors = new List<string>(){$"Payment Destination with Id : {id} not found!"}});
             }
 
-            return Ok(paymentDestination.Adapt<PaymentDesInfoDto>());
+            return Ok(new BaseResultWithData<PaymentDesInfoDto>()
+            {
+                Success = true,
+                Message = $"Get payment destination by id {id}",
+                Data = paymentDestination.Adapt<PaymentDesInfoDto>()
+            });
         }
 
         /// <summary>
@@ -127,7 +133,7 @@ namespace PetShop.Controllers
         [HttpPost]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType(typeof(BaseResultBadRequest), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(BaseResultWithData<CreatePaymentDesDto>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<PaymentDestination>> CreatePaymentDestination(CreatePaymentDesDto paymentDestination)
         {
@@ -143,7 +149,7 @@ namespace PetShop.Controllers
                 return Ok(
                     new BaseResultWithData<CreatePaymentDesDto>()
                     {
-                        Result = true,
+                        Success = true,
                         Message = "Create Payment Destination",
                         Data = paymentDestination
                     }
@@ -169,12 +175,12 @@ namespace PetShop.Controllers
         {
             if (_context.PaymentDestinations == null)
             {
-                return NotFound(new BaseResultBadRequest(){Errors = new List<string>(){$"Table Payment Destination is null!"}});
+                return NotFound(new BaseBadRequestResult(){Errors = new List<string>(){$"Table Payment Destination is null!"}});
             }
             var paymentDestination = await _context.PaymentDestinations.FindAsync(id);
             if (paymentDestination == null)
             {
-                return NotFound(new BaseResultBadRequest(){Errors = new List<string>(){$"Payment destination with id : {id} not found!"}});
+                return NotFound(new BaseBadRequestResult(){Errors = new List<string>(){$"Payment destination with id : {id} not found!"}});
             }
 
             _context.PaymentDestinations.Remove(paymentDestination);

@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace serverapi.Helpers
 {
@@ -18,7 +14,7 @@ namespace serverapi.Helpers
         /// <param name="key"></param>
         /// <param name="inputData"></param>
         /// <returns></returns>
-        public static String HmacSHA512(string key, string inputData)
+        public static string HmacSHA512(string key, string inputData)
         {
             var hash = new StringBuilder();
             byte[] keyBytes = Encoding.UTF8.GetBytes(key);
@@ -41,7 +37,7 @@ namespace serverapi.Helpers
         /// <param name="inputData"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static String HmacSHA256(string inputData, string key)
+        public static string HmacSHA256(string inputData, string key)
         {
             byte[] keyByte = Encoding.UTF8.GetBytes(key);
             byte[] messageBytes = Encoding.UTF8.GetBytes(inputData);

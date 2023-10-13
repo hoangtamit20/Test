@@ -43,14 +43,16 @@ namespace PetShop.Controllers
         /// <param name="nguoiDungRegisterModel"></param>
         /// <returns></returns>
         /// <remarks>
-        ///     POST :
+        ///     POST:
         /// {
-        ///     "Name" = "Võ Văn A",
-        ///     "Email" = "vovana@gmail.com",
-        ///     "Password" = "VoVanA=123"
+        ///     "name":"Võ Văn A",
+        ///     "email":"vovana@gmail.com",
+        ///     "password":"VoVanA=123"
         /// }
         /// </remarks>
         [HttpPost("/dang-ky")]
+        [ProducesResponseType(typeof(JwtResponseModel<UserDataDto>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> DangKy([FromBody] NguoiDungRegisterModel nguoiDungRegisterModel)
         {
             if (ModelState.IsValid)
@@ -79,29 +81,29 @@ namespace PetShop.Controllers
                         }
                         // generate token
                         var token = await JwtToken.GenerateJwtToken(_userManager, nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
-                        return Ok(new JwtResponseModel()
+                        return Ok(new JwtResponseModel<UserDataDto>()
                         {
                             Result = true,
                             Token = token.AccessToken!,
-                            RefreshToken = token.RefreshToken!
+                            RefreshToken = token.RefreshToken!,
+                            Data = nguoiDung.Adapt<UserDataDto>()
                         });
                     }
-                    return BadRequest(new JwtResponseModel()
+                    return BadRequest(new BaseBadRequestResult()
                     {
                         Errors = new List<string>(){
                             "Lỗi hệ thống!"
                         },
-                        Result = false
                     });
                 }
-                return BadRequest(new JwtResponseModel()
+                return BadRequest(new BaseBadRequestResult()
                 {
                     Errors = new List<string>(){
                         "Email đã được sử dụng!"
                     }
                 });
             }
-            return BadRequest();
+            return BadRequest(new BaseBadRequestResult(){Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()});
         }
 
         /// <summary>
@@ -110,16 +112,16 @@ namespace PetShop.Controllers
         /// <param name="loginResponse"></param>
         /// <returns></returns>
         /// <remarks>
-        ///     POST
+        ///     POST:
         /// {
-        ///     Email = "vovana@gmail.com",
-        ///     Password = "VoVanA=123"
+        ///     "email":"vovana@gmail.com",
+        ///     "password":"VoVanA=123"
         /// }
         /// </remarks>
 
         [HttpPost("/dang-nhap")]
-        [ProducesResponseType(typeof(BaseLoginResultWithData<UserDataDto>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseResultBadRequest), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(JwtResponseModel<UserDataDto>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> DangNhap([FromBody] LoginResponse loginResponse)
         {
             if (ModelState.IsValid)
@@ -127,26 +129,13 @@ namespace PetShop.Controllers
                 var nguoiDung = await _userManager.FindByEmailAsync(loginResponse.UserName!);
                 if (nguoiDung is null)
                 {
-                    return BadRequest(new BaseResultBadRequest()
-                    {
-                        Success = false,
-                        Errors = new List<string>(){
-                            "Tên đăng nhập không tồn tại!"
-                        }
-                    });
+                    return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){"Tên đăng nhập không tồn tại!"}});
                 }
                 var isCorrect = await _userManager.CheckPasswordAsync(nguoiDung, loginResponse.Password!);
                 if (!isCorrect)
-                    return BadRequest(new BaseResultBadRequest()
-                    {
-                        Success = false,
-                        Errors = new List<string>(){
-                            "Mật khẩu không đúng!"
-                        }
-                    });
+                    return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){"Mật khẩu không đúng!"}});
                 var jwtToken = await JwtToken.GenerateJwtToken(_userManager, nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
-
-                return Ok(new BaseLoginResultWithData<UserDataDto>()
+                return Ok(new JwtResponseModel<UserDataDto>()
                 {
                     Result = true,
                     Token = jwtToken.AccessToken!,
@@ -154,17 +143,7 @@ namespace PetShop.Controllers
                     Data = nguoiDung.Adapt<UserDataDto>()
                 });
             }
-            return BadRequest(new BaseLoginResultWithData<UserDataDto>()
-            {
-                Result = false,
-                Errors = new List<BaseError>(){
-                    new BaseError()
-                    {
-                        Code = "",
-                        Message = "Tên đăng nhập hoặc mật khẩu không hợp lệ"
-                    }
-                }
-            });
+            return BadRequest(new BaseBadRequestResult(){Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()});
         }
 
 
@@ -174,13 +153,14 @@ namespace PetShop.Controllers
         /// <param name="token"></param>
         /// <returns></returns>
         /// <remarks>
-        ///     POST : google-login
+        ///     POST: google-login
         /// {
         ///     "token" : ""
         /// }
         /// </remarks>
         [HttpPost("/google-login")]
-        [ProducesResponseType(typeof(BaseLoginResultWithData<UserDataDto>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(JwtResponseModel<UserDataDto>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GoogleLogin([FromHeader] string token)
         {
             // Gọi hàm GetUserInfoAsync của GoogleService để lấy thông tin người dùng từ Google
@@ -202,7 +182,7 @@ namespace PetShop.Controllers
                 if (isCreate.Succeeded)
                 {
                     // Update the user with the additional properties
-                    await _userManager.UpdateAsync(nguoiDung);
+                    // await _userManager.UpdateAsync(nguoiDung);
                     var user = await _userManager.FindByEmailAsync(nguoiDung.Email!);
                     if (user is not null)
                     {
@@ -214,7 +194,7 @@ namespace PetShop.Controllers
                     }
                     // generate token
                     var tokenCreate = await JwtToken.GenerateJwtToken(_userManager, nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
-                    return Ok(new BaseLoginResultWithData<UserDataDto>()
+                    return Ok(new JwtResponseModel<UserDataDto>()
                     {
                         Result = true,
                         Data = nguoiDung.Adapt<UserDataDto>(),
@@ -222,17 +202,7 @@ namespace PetShop.Controllers
                         RefreshToken = tokenCreate.RefreshToken!
                     });
                 }
-                return BadRequest(new BaseLoginResultWithData<UserDataDto>()
-                {
-                    Result = false,
-                    Errors = new List<BaseError>(){
-                    new BaseError()
-                    {
-                        Code = "",
-                        Message = "Create user failed"
-                    }
-                }
-                });
+                return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){"Create user failed!"}});
             }
             else
             {
@@ -240,7 +210,7 @@ namespace PetShop.Controllers
                 var jwtToken = await JwtToken.GenerateJwtToken(_userManager, nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
 
                 // Trả về jwt token cho client
-                return Ok(new BaseLoginResultWithData<UserDataDto>()
+                return Ok(new JwtResponseModel<UserDataDto>()
                 {
                     Result = true,
                     Data = userInfo.Adapt<UserDataDto>(),

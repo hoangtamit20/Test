@@ -5,7 +5,7 @@
 namespace PetShop.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class updatelengthpaytrans : Migration
+    public partial class updateLengthPaytrans : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

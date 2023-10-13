@@ -37,7 +37,7 @@ namespace serverapi.Dtos.Payments
         /// <summary>
         /// 
         /// </summary>
-        public DateTime? ExpireDate { get; set; } = DateTime.Now.AddSeconds(50);
+        public DateTime? ExpireDate { get; set; } = DateTime.Now.AddMinutes(50);
 
         /// <summary>
         /// 

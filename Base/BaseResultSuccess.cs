@@ -8,16 +8,11 @@ namespace serverapi.Base
     /// <summary>
     /// 
     /// </summary>
-    public class BaseResultBadRequest
+    public class BaseResultSuccess
     {
         /// <summary>
         /// 
         /// </summary>
-        public bool Success { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public List<string> Errors { get; set; } = new List<string>();
+        public string Message { get; set; } = string.Empty;
     }
 }

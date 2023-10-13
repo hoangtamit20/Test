@@ -48,7 +48,7 @@ namespace serverapi.Controllers
             var totalPage = (int)Math.Ceiling((double)data.Count / pagingService.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)data.Count / pagingService.PageSize);
             return Ok(new BasePagingData<List<ProductInfoDto>>()
             {
-                Result = true,
+                Success = true,
                 Message = "List Product",
                 Data = data,
                 TotalPage = totalPage
@@ -76,7 +76,7 @@ namespace serverapi.Controllers
                 product => product.Name);
             return Ok(new BasePagingData<List<ProductInfoDto>>()
             {
-                Result = true,
+                Success = true,
                 Message = "List Product Discount",
                 TotalPage = totalPage,
                 Data = filteredAndPagedProducts,
@@ -102,7 +102,7 @@ namespace serverapi.Controllers
                 product => product.Name);
             return Ok(new BasePagingData<List<ProductInfoDto>>()
             {
-                Result = true,
+                Success = true,
                 Message = "List Product No Discount",
                 TotalPage = totalPage,
                 Data = filteredAndPagedProducts,
@@ -116,7 +116,7 @@ namespace serverapi.Controllers
         /// <param name="pagingFilterDto"></param>
         /// <returns></returns>
         /// <remarks>
-        ///     POST :
+        ///     POST:
         /// {
         ///     "filter": "enter string to want filter",
         ///     "pageIndex": Index of page want to display,
@@ -128,6 +128,7 @@ namespace serverapi.Controllers
         [AllowAnonymous]
         [Route("/list-product-info-homepage")]
         [ProducesResponseType(typeof(BasePagingData<List<ProductInfoDto>>), (int)HttpStatusCode.OK)]
+
         public async Task<IActionResult> GetAlls(string? idLanguage, [FromQuery] PagingFilterDto pagingFilterDto)
         {
             idLanguage = idLanguage ?? "VN";
@@ -140,7 +141,7 @@ namespace serverapi.Controllers
                 product => product.Name);
             return Ok(new BasePagingData<List<ProductInfoDto>>()
             {
-                Result = true,
+                Success = true,
                 Message = "List Product",
                 TotalPage = totalPage,
                 Data = filteredAndPagedProducts,
@@ -179,7 +180,12 @@ namespace serverapi.Controllers
             {
                 return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"ProductTranslation with IdProduct : {id} not found" } });
             }
-            return Ok((await GetListProductsAsync(idLanguage)).Find(p => p.Id == id));
+            return Ok(new BaseResultWithData<ProductInfoDto>()
+            {
+                Success = true,
+                Message = "Get category by id",
+                Data = (await GetListProductsAsync(idLanguage)).Find(p => p.Id == id)
+            });
         }
 
         /// <summary>
@@ -203,7 +209,7 @@ namespace serverapi.Controllers
         /// </remarks>
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseResultWithData<CreateProductDto>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> Create(string? language, [FromBody] CreateProductDto createProductDto)
         {
@@ -227,7 +233,12 @@ namespace serverapi.Controllers
                         await _dbContext.SaveChangesAsync();
                         // commit trans
                         transaction.Commit();
-                        return Ok(createProductDto);
+                        return Ok(new BaseResultWithData<CreateProductDto>()
+                        {
+                            Success = true,
+                            Message = "Create product is success!",
+                            Data = createProductDto
+                        });
                     }
                     catch (Exception ex)
                     {
@@ -251,9 +262,9 @@ namespace serverapi.Controllers
         ///     PUT :
         /// </remarks>
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(UpdateProductDto), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseResultWithData<UpdateProductDto>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateProductDto updateProductDto)
         {
@@ -266,7 +277,7 @@ namespace serverapi.Controllers
             var product = await _dbContext.Products.FindAsync(id);
             if (product == null)
             {
-                return NotFound();
+                return NotFound(new BaseBadRequestResult(){Errors = new List<string>(){"Db Product is null!"}});
             }
 
             using (var _transaction = await _dbContext.Database.BeginTransactionAsync())
@@ -288,7 +299,12 @@ namespace serverapi.Controllers
                     await _dbContext.SaveChangesAsync();
                     await _transaction.CommitAsync();
 
-                    return Ok(updateProductDto);
+                    return Ok(new BaseResultWithData<UpdateProductDto>()
+                    {
+                        Success = true,
+                        Message = $"Product with Id: {id} was update successed!",
+                        Data = updateProductDto
+                    });
                 }
                 catch (Exception ex)
                 {

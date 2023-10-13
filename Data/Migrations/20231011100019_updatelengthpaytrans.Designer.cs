@@ -13,7 +13,7 @@ namespace PetShop.Data.Migrations
 {
     [DbContext(typeof(PetShopDbContext))]
     [Migration("20231011100019_updatelengthpaytrans")]
-    partial class updatelengthpaytrans
+    partial class updateLengthPaytrans
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

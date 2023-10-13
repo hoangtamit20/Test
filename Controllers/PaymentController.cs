@@ -8,12 +8,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using PetShop.Data;
+using RestSharp;
 using serverapi.Base;
 using serverapi.Configurations;
 using serverapi.Constants;
 using serverapi.Dtos;
 using serverapi.Dtos.Merchants;
 using serverapi.Dtos.Payments;
+using serverapi.Dtos.Payments.Momo;
 using serverapi.Dtos.Payments.VnPay;
 using serverapi.Entity;
 using serverapi.Helpers;
@@ -31,21 +33,24 @@ namespace serverapi.Controllers
         private readonly VnPayConfig _vnpayConfig;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly UserManager<AppUser> _userManager;
+        private readonly MomoConfig _momoConfig;
 
         /// <summary>
         /// </summary>
         /// <param name="context"></param>
         /// <param name="userManager"></param>
         /// <param name="vnpayConfig"></param>
+        /// <param name="momoConfig"></param>
         /// <param name="httpContextAccessor"></param>
-        
+
         public PaymentController(
-            PetShopDbContext context, 
-            IOptions<VnPayConfig> vnpayConfig, 
+            PetShopDbContext context,
             IHttpContextAccessor httpContextAccessor,
+            IOptions<VnPayConfig> vnpayConfig,
+            IOptions<MomoConfig> momoConfig,
             UserManager<AppUser> userManager)
-        => (_context, _httpContextAccessor, _vnpayConfig, _userManager) 
-        = (context, httpContextAccessor, vnpayConfig.Value, userManager);
+        => (_context, _httpContextAccessor, _vnpayConfig, _momoConfig, _userManager)
+        = (context, httpContextAccessor, vnpayConfig.Value, momoConfig.Value, userManager);
 
         /// <summary>
         /// Payment order with VnPay, Momo, ZaloPay (Authorize)
@@ -72,6 +77,7 @@ namespace serverapi.Controllers
         [ProducesResponseType(typeof(BaseResultWithData<PaymentLinkDto>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> PaymentWithVnPay([FromBody] PaymentInfoDto paymentInfoDto)
         {
+            var result = new BaseResultWithData<PaymentLinkDto>();
             using (var _transaction = await _context.Database.BeginTransactionAsync())
             {
                 var payment = paymentInfoDto.Adapt<Payment>();
@@ -90,35 +96,63 @@ namespace serverapi.Controllers
                     };
                     _context.PaymentSignatures.Add(paymentSignature);
                     await _context.SaveChangesAsync();
-                    await _transaction.CommitAsync();
-                    
+
                     // choice method for payment
                     var paymentUrl = string.Empty;
                     switch (await GetPaymentDestinationShortName(payment.PaymentDestinationId))
                     {
-                        case PaymentMethodConstant.VNPAY :
-                            var vnpayRequest = new VnPayRequestDto(
-                                _vnpayConfig.Version,
-                                _vnpayConfig.TmnCode,
-                                DateTime.UtcNow,
-                                _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? string.Empty,
-                                paymentInfoDto.RequiredAmount ?? 0,
-                                paymentInfoDto.PaymentCurrency ?? string.Empty,
-                                "other",
-                                paymentInfoDto.PaymentContent,
-                                _vnpayConfig.ReturnUrl,
-                                payment.Id.ToString()
-                            );
+                        //process for vnpay
+                        case PaymentMethodConstant.VNPAY:
+                            {
+                                var vnpayRequest = new VnPayRequestDto(
+                                    _vnpayConfig.Version,
+                                    _vnpayConfig.TmnCode,
+                                    DateTime.UtcNow,
+                                    _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? string.Empty,
+                                    paymentInfoDto.RequiredAmount ?? 0,
+                                    paymentInfoDto.PaymentCurrency ?? string.Empty,
+                                    "other",
+                                    paymentInfoDto.PaymentContent,
+                                    _vnpayConfig.ReturnUrl,
+                                    payment.Id.ToString()
+                                );
+                                paymentUrl = vnpayRequest.GetLink(_vnpayConfig.PaymentUrl, _vnpayConfig.HashSecret);
+                                break;
+                            }
+                        //process for momo
+                        case PaymentMethodConstant.MOMO:
+                            {
+                                var momoOneTimeRequest = new MomoOneTimeRequestDto(
+                                    _momoConfig.PartnerCode,
+                                    payment.OrderId.ToString(),
+                                    (long)paymentInfoDto.RequiredAmount!,
+                                    payment.OrderId.ToString(),
+                                    paymentInfoDto.PaymentContent ?? string.Empty,
+                                    _momoConfig.ReturnUrl,
+                                    _momoConfig.IpnUrl,
+                                    "captureWallet",
+                                    ""
+                                );
+                                momoOneTimeRequest.MakeSignature(_momoConfig.AccessKey, _momoConfig.SecretKey);
 
-                            paymentUrl = vnpayRequest.GetLink(_vnpayConfig.PaymentUrl, _vnpayConfig.HashSecret);
-                            break;
+                                var client = new RestClient(_momoConfig.PaymentUrl);
+                                var request = new RestRequest() { Method = Method.Post };
+                                request.AddHeader("Content-Type", "application/json; charset=UTF-8");
+
+                                request.AddParameter("application/json", JsonConvert.SerializeObject(momoOneTimeRequest), ParameterType.RequestBody);
+                                var response = await client.ExecuteAsync(request);
+                                paymentUrl = JsonConvert.DeserializeObject<MomoOneTimeCreateLinkResponseDto>(response.Content!)?.PayUrl;
+                                break;
+                            }
+
                         default:
-                        break;
+                            break;
                     }
+                    await _transaction.CommitAsync();
                     return Ok(new BaseResultWithData<PaymentLinkDto>()
                     {
-                        Result = true,
-                        Message = "",
+                        Success = true,
+                        Message = result.Message,
                         Data = new PaymentLinkDto()
                         {
                             PaymentId = payment.Id,
@@ -126,13 +160,16 @@ namespace serverapi.Controllers
                         }
                     });
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    return StatusCode(500, new BaseBadRequestResult(){Errors = new List<string>(){$"Server error - {ex.Message}"}});
+                    await _transaction.RollbackAsync();
+                    return StatusCode(500, new BaseBadRequestResult() { Errors = new List<string>() { $"Server error - {ex.Message}" } });
                 }
 
             }
         }
+
+
 
 
         /// <summary>
@@ -142,14 +179,19 @@ namespace serverapi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("{id}")]
-        [ProducesResponseType(typeof(PaymentDto), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseResultWithData<PaymentDto>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetPaymentById(int id)
         {
             var payment = await _context.Payments.FindAsync(id);
             if (payment is null)
-                return NotFound(new BaseBadRequestResult(){Errors = new List<string>(){$"Payment with Id : {id} not found!"}});
-            return Ok(payment.Adapt<PaymentDto>());
+                return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Payment with Id : {id} not found!" } });
+            return Ok(new BaseResultWithData<PaymentDto>()
+            {
+                Success = true,
+                Message = $"Get payment by id : {id}",
+                Data = payment.Adapt<PaymentDto>()
+            });
         }
 
 
@@ -161,7 +203,7 @@ namespace serverapi.Controllers
         [HttpGet]
         [Route("vnpay-return")]
         [ProducesResponseType(typeof(RedirectResult), (int)HttpStatusCode.Found)]
-        public async Task<IActionResult> VnPayReturn([FromQuery]VnPayResponseDto vnPayResponseDto)
+        public async Task<IActionResult> VnPayReturn([FromQuery] VnPayResponseDto vnPayResponseDto)
         {
             string returnUrl = string.Empty;
             var returnModel = new PaymentReturnDto();
@@ -173,7 +215,7 @@ namespace serverapi.Controllers
                     var payment = (await _context.Payments.FindAsync(vnPayResponseDto.vnp_TxnRef)).Adapt<PaymentDto>();
                     if (payment is not null)
                     {
-                        var merchant = (await _context.Merchants.FindAsync(payment.MerchantId)).Adapt<MerchantInfoDto>();
+                        var merchant = (_context.Merchants.Find(payment.MerchantId)).Adapt<MerchantInfoDto>();
                         //TODO: create returnUrl
                         returnUrl = merchant?.MerchantReturnUrl ?? string.Empty;
                     }
@@ -181,7 +223,7 @@ namespace serverapi.Controllers
                     {
                         returnModel.PaymentStatus = "11";
                         returnModel.PaymentMessage = "Can't find payment at payment service";
-                    }         
+                    }
 
                     if (vnPayResponseDto.vnp_ResponseCode == "00")
                     {
@@ -202,9 +244,9 @@ namespace serverapi.Controllers
                     returnModel.PaymentMessage = $"Invalid signature in response!";
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){$"Failed : {ex.Message} "}});
+                return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Failed : {ex.Message} " } });
             }
             var b = returnUrl;
             if (returnUrl.EndsWith("/"))
@@ -214,26 +256,165 @@ namespace serverapi.Controllers
             return Redirect($"{returnUrl}?{returnModel.ToQueryString()}");
         }
 
-/// <summary>
-/// 
-/// </summary>
-/// <param name="vnPayIpnResponseDto"></param>
-/// <returns></returns>
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="momoOneTimeResultRequestDto"></param>
+        /// <returns></returns>
         [HttpGet]
-        [Route("check-payment")]
-        public async Task<IActionResult>CheckPayment([FromQuery]VnPayIpnResponseDto vnPayIpnResponseDto)
+        [Route("momo-return")]
+        public async Task<IActionResult> MomoReturn(MomoOneTimeResultRequestDto momoOneTimeResultRequestDto)
         {
-            var result = (await ProcessVnPayIpn(vnPayIpnResponseDto)).Data;
-            return Ok(new {
-                RspCode = result!.RspCode,
-                Message = result.Message
-            });
+            var a = await _context.PaymentNotifications.ToListAsync();
+            return Ok();
         }
 
 
-        
-        private async Task<BaseResultWithData<VnPayIpnResponseDto>>ProcessVnPayIpn(VnPayIpnResponseDto vnPayIpnResponseDto)
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vnPayIpnResponseDto"></param>
+        /// <returns></returns>
+
+        [HttpGet]
+        [Route("check-payment")]
+        public async Task<IActionResult> CheckPayment([FromQuery] VnPayIpnResponseDto vnPayIpnResponseDto)
+        {
+
+            try
+            {
+                // check valid signature
+                var isValidSignature = vnPayIpnResponseDto.IsValidSignature(_vnpayConfig.HashSecret);
+                if (isValidSignature)
+                {
+                    // get payment required
+                    var payment = _context.Payments.Find(vnPayIpnResponseDto.vnp_TxnRef);
+                    if (payment != null)
+                    {
+                        // check amount valid
+                        if (payment.RequiredAmount == (vnPayIpnResponseDto.vnp_Amount / 100))
+                        {
+                            // check payment status
+                            if (payment.PaymentStatus != "0")
+                            {
+                                string message = string.Empty;
+                                string status = string.Empty;
+                                if (vnPayIpnResponseDto.vnp_ResponseCode == "00" &&
+                                    vnPayIpnResponseDto.vnp_TransactionStatus == "00")
+                                {
+                                    status = "0";
+                                    message = "Tran success";
+                                }
+                                else
+                                {
+                                    status = "-1";
+                                    message = "Tran error";
+                                }
+
+                                // create payment trans
+                                // using (var _transaction = _context.Database.BeginTransaction())
+                                // {
+                                try
+                                {
+                                    var paymentTransDto = new CreatePaymentTransDto()
+                                    {
+                                        PaymentId = vnPayIpnResponseDto.vnp_TxnRef!.Value,
+                                        TranMessage = message,
+                                        TranDate = DateTime.Now,
+                                        TranPayload = JsonConvert.SerializeObject(vnPayIpnResponseDto),
+                                        TranStatus = status,
+                                        TranAmount = vnPayIpnResponseDto.vnp_Amount
+                                    };
+
+                                    var paymentTrans = paymentTransDto.Adapt<PaymentTransaction>();
+                                    _context.PaymentTransactions.Add(paymentTrans);
+                                    await _context.SaveChangesAsync();
+
+                                    // update payment
+                                    payment.PaymentLastMessage = paymentTrans.TranMessage;
+                                    payment.PaidAmount = (_context.PaymentTransactions
+                                        .Where(pt => pt.PaymentId == payment.Id && pt.TranStatus == "0")
+                                        .Sum(pt => pt.TranAmount)) / 100;
+                                    payment.PaymentStatus = paymentTrans.TranStatus;
+                                    payment.LastUpdateAt = DateTime.Now;
+                                    // var a = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                                    // System.Console.WriteLine("aldhadh");
+                                    // payment.LastUpdateBy = (await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!))!.Id;
+
+                                    _context.Entry<Payment>(payment).State = EntityState.Modified;
+                                    await _context.SaveChangesAsync();
+
+                                    return Ok(new
+                                    {
+                                        RspCode = "00",
+                                        Message = "Transaction success!"
+                                    });
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    // _transaction.Rollback();
+                                    return Ok(new
+                                    {
+                                        RspCode = "99",
+                                        Message = ex.Message
+                                    });
+                                }
+                                // }
+                            }
+                            else
+                            {
+                                return Ok(new
+                                {
+                                    RspCode = "02",
+                                    Message = "Order already confirmed"
+                                });
+                            }
+                        }
+                        else
+                        {
+                            return Ok(new
+                            {
+                                RspCode = "04",
+                                Message = "Invalid amount"
+                            });
+                        }
+                    }
+                    else
+                    {
+                        return Ok(new
+                        {
+                            RspCode = "01",
+                            Message = "Order not found"
+                        });
+                    }
+
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        RspCode = "97",
+                        Message = "Invalid Signature"
+                    });
+
+                }
+            }
+            catch (Exception ex)
+            {
+                // TODO: process when exception
+                return Ok(new
+                {
+                    RspCode = "99",
+                    Message = $"Input required data - {ex.Message}"
+                });
+            }
+        }
+
+
+
+        private async Task<BaseResultWithData<VnPayIpnResponseDto>> ProcessVnPayIpn(VnPayIpnResponseDto vnPayIpnResponseDto)
         {
             var result = new BaseResultWithData<VnPayIpnResponseDto>();
             var resultData = new VnPayIpnResponseDto();
@@ -255,7 +436,7 @@ namespace serverapi.Controllers
                             {
                                 string message = string.Empty;
                                 string status = string.Empty;
-                                if (vnPayIpnResponseDto.vnp_ResponseCode == "00" && 
+                                if (vnPayIpnResponseDto.vnp_ResponseCode == "00" &&
                                     vnPayIpnResponseDto.vnp_TransactionStatus == "00")
                                 {
                                     status = "0";
@@ -279,7 +460,7 @@ namespace serverapi.Controllers
                                             TranDate = DateTime.Now,
                                             TranPayload = JsonConvert.SerializeObject(vnPayIpnResponseDto),
                                             TranStatus = status,
-                                            TranAmount = vnPayIpnResponseDto.vnp_Amount
+                                            TranAmount = vnPayIpnResponseDto.vnp_Amount / 100
                                         };
 
                                         var paymentTrans = paymentTransDto.Adapt<PaymentTransaction>();
@@ -298,7 +479,7 @@ namespace serverapi.Controllers
                                         _context.Entry<Payment>(payment).State = EntityState.Modified;
 
                                     }
-                                    catch(Exception ex)
+                                    catch (Exception ex)
                                     {
                                         resultData.Set("99", $"{ex.Message}");
                                         _transaction.Rollback();
@@ -326,14 +507,14 @@ namespace serverapi.Controllers
                     resultData.Set("97", "Invalid Signature");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 // TODO: process when exception
                 resultData.Set("99", $"Input required data - {ex.Message}");
             }
 
             result.Data = vnPayIpnResponseDto;
-            result.Result = resultData.RspCode == "00";
+            result.Success = resultData.RspCode == "00";
 
             return result;
         }
