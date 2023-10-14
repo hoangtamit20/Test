@@ -1,4 +1,5 @@
 using System.Net;
+using System.Web;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -234,8 +235,6 @@ namespace PetShop.Controllers
         ///     POST:
         /// {
         ///     "email":"hoangtamit20@gmail.com",
-        ///     "newPassword":"New=Password=OK",
-        ///     "reNewPassword":"New=Password=OK"
         /// }
         /// </remarks>
         [HttpPost]
@@ -250,15 +249,45 @@ namespace PetShop.Controllers
                 // check user exists
                 if (userExist is not null)
                 {
-                    // generate token
-                    var tokenReset = await _userManager.GeneratePasswordResetTokenAsync(userExist);
-                    // process send email service
-                    var callbackUrl = Url.RouteUrl(
-                        "DefaultApi",
-                        new { controller = "Account", action = "ResetPassword", userId = userExist.Id, code = tokenReset },
-                        Request.Scheme);
-                    await _emailSender.SendEmailAsync(email, "Reset Password", $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
-                    return Ok(new BaseResultSuccess() { Message = $"Please confirm email to change password!" });
+                    if (!(await _userManager.IsEmailConfirmedAsync(userExist)))
+                    {
+                        userExist.EmailConfirmed = true;
+                        var result = await _userManager.UpdateAsync(userExist);
+
+                        if (result.Succeeded)
+                        {
+                            // generate token
+                            var tokenReset = await _userManager.GeneratePasswordResetTokenAsync(userExist);
+                            // process send email service
+                            var uriBuilder = new UriBuilder("http://example.com/confirmEmail");
+                            var parameters = HttpUtility.ParseQueryString(string.Empty);
+                            parameters["id"] = userExist.Id.ToString();
+                            parameters["token"] = tokenReset;
+                            uriBuilder.Query = parameters.ToString();
+                            Uri finalUrl = uriBuilder.Uri;
+                            await _emailSender.SendEmailAsync(email, "Reset Password", $"Please reset your password by clicking here: <a href='{finalUrl}'>link</a>");
+                            return Ok(new BaseResultSuccess() { Message = $"Please confirm email to change password!" });
+                        }
+                        else
+                        {
+                            return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { "Error updating user" } });
+                        }
+                    }
+                    else
+                    {
+                        // generate token
+                        var tokenReset = await _userManager.GeneratePasswordResetTokenAsync(userExist);
+                        // process send email service
+                        var uriBuilder = new UriBuilder("http://localhost:3000/update-password");
+                        var parameters = HttpUtility.ParseQueryString(string.Empty);
+                        parameters["id"] = userExist.Id.ToString();
+                        parameters["token"] = tokenReset;
+                        uriBuilder.Query = parameters.ToString();
+                        Uri finalUrl = uriBuilder.Uri;
+                        await _emailSender.SendEmailAsync(email, "Reset Password", $"Please reset your password by clicking here: <a href='{finalUrl}'>link</a>");
+                        return Ok(new BaseResultSuccess() { Message = $"Please confirm email to change password!" });
+                    }
+
                 }
                 return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Email : {email} not exists" } });
             }
