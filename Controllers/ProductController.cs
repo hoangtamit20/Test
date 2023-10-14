@@ -69,11 +69,12 @@ namespace serverapi.Controllers
             
             var pagingFilterDto = new PagingFilterDto();
             var data = await GetListProductDiscountAsync("VN");
-            var totalPage = (int)Math.Ceiling((double)data.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)data.Count / pagingFilterDto.PageSize);
             var service = new PagingFilterService<ProductInfoDto>();
             var filteredAndPagedProducts = service.FilterAndPage(data, pagingFilterDto,
                 product => product.Name.Contains(pagingFilterDto.Filter!) || product.CategoryName!.Contains(pagingFilterDto.Filter!),
+                product => product.CategoryId == pagingFilterDto.CategoryId,
                 product => product.Name);
+            var totalPage = (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize);
             return Ok(new BasePagingData<List<ProductInfoDto>>()
             {
                 Success = true,
@@ -95,11 +96,12 @@ namespace serverapi.Controllers
         {
             var pagingFilterDto = new PagingFilterDto();
             var data = await GetListProductNoDiscountAsync("VN");
-            var totalPage = (int)Math.Ceiling((double)data.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)data.Count / pagingFilterDto.PageSize);
             var service = new PagingFilterService<ProductInfoDto>();
             var filteredAndPagedProducts = service.FilterAndPage(data, pagingFilterDto,
                 product => product.Name.Contains(pagingFilterDto.Filter!) || product.CategoryName!.Contains(pagingFilterDto.Filter!),
+                product => product.CategoryId == pagingFilterDto.CategoryId,
                 product => product.Name);
+            var totalPage = (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize);
             return Ok(new BasePagingData<List<ProductInfoDto>>()
             {
                 Success = true,
@@ -133,12 +135,15 @@ namespace serverapi.Controllers
         {
             idLanguage = idLanguage ?? "VN";
             var data = await GetListProductsAsync(idLanguage);
-            var totalPage = (int)Math.Ceiling((double)data.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)data.Count / pagingFilterDto.PageSize);
-
             var service = new PagingFilterService<ProductInfoDto>();
-            var filteredAndPagedProducts = service.FilterAndPage(data, pagingFilterDto,
-                product => product.Name.Contains(pagingFilterDto.Filter!) || product.CategoryName!.Contains(pagingFilterDto.Filter!),
+            var filteredAndPagedProducts = service.FilterAndPage(
+                data, 
+                pagingFilterDto,
+                product => product.Name.ToLower().Contains(pagingFilterDto.Filter!.ToLower()) 
+                    || product.CategoryName!.ToLower().Contains(pagingFilterDto.Filter!.ToLower()),
+                product => product.CategoryId == pagingFilterDto.CategoryId,
                 product => product.Name);
+            var totalPage = (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize);
             return Ok(new BasePagingData<List<ProductInfoDto>>()
             {
                 Success = true,

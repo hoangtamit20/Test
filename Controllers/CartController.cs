@@ -51,17 +51,18 @@ namespace serverapi.Controllers
         [HttpGet]
         [Authorize]
         [ProducesResponseType(typeof(BaseResultWithData<List<CartInfoDto>>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.Unauthorized)]
         public async Task<IActionResult> GetCartsByUserName(string? language)
         {
-            if (User.Identity!.Name is null)
-                return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { "Authorize failed" } });
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser is null)
+                return Unauthorized(new BaseBadRequestResult() { Errors = new List<string>() { "Authorize failed" } });
             var cartItems = await _context.CartItems
                 .Include(ct => ct.Cart)
                 .ThenInclude(c => c.User)
                 .Include(ct => ct.Product)
                 .ThenInclude(p => p.ProductTranslations)
-                .Where(ct => ct.Cart.User.Email == User.Identity!.Name)
+                .Where(ct => ct.Cart.User.Email == currentUser.Email)
                 .Select(ct => new CartInfoDto
                 {
                     Id = ct.Id,
@@ -92,21 +93,22 @@ namespace serverapi.Controllers
         /// }
         /// </remarks>
         [HttpPost]
-        [Authorize(Roles = "User")]
+        [Authorize]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> AutoAddCartItems([FromBody] int id)
         {
-            if (User.Identity!.Name is null)
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser is null)
             {
-                return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { "Authorize error" } });
+                return Unauthorized(new BaseBadRequestResult() { Errors = new List<string>() { "Authorize error" } });
             }
             var product = await _context.Products.FindAsync(id);
             if (product is null)
                 return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { "product with id : {id} not exists" } });
-            var a = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == currentUser.Id);
             if (cart is null) // if cart is null then create cart and add cartitem to cart.
             {
                 using (var _transaction = await _context.Database.BeginTransactionAsync())
@@ -116,7 +118,7 @@ namespace serverapi.Controllers
                         // add cart
                         cart = new Cart()
                         {
-                            UserId = (await _userManager.FindByNameAsync(User.Identity!.Name))!.Id,
+                            UserId = currentUser.Id,
                             DateCreated = DateTime.UtcNow
                         };
                         await _context.Carts.AddAsync(cart);
@@ -171,19 +173,21 @@ namespace serverapi.Controllers
         [Authorize(Roles = "User")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> UpdateQuantityCartItems(int id, int quantity)
         {
+            var currentUser = await _userManager.GetUserAsync(User);
             // check is authorize
-            if (!User.Identity!.IsAuthenticated)
+            if (currentUser is null)
                 return Unauthorized(new BaseBadRequestResult() { Errors = new List<string>() { "Unauthorized" } });
             var product = await _context.Products.FindAsync(id);
             if (product is null)
                 return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Product with Id : {id} not found!" } });
             if (quantity < 0)
                 return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Value of id : {id} in valid!" } });
-            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == currentUser.Id);
             var cartItems = await _context.CartItems.FirstOrDefaultAsync(ct => (ct.ProductId == id) && (ct.CartId == cart!.Id));
             // if quantity = 0 -> remove product from cart
             if (quantity == 0)

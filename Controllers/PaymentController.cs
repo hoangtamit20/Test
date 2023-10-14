@@ -1,9 +1,13 @@
 using System.Net;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Web;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -18,7 +22,9 @@ using serverapi.Dtos.Payments;
 using serverapi.Dtos.Payments.Momo;
 using serverapi.Dtos.Payments.VnPay;
 using serverapi.Entity;
+using serverapi.Enum;
 using serverapi.Helpers;
+using serverapi.Libraries.SignalRs;
 
 namespace serverapi.Controllers
 {
@@ -34,6 +40,7 @@ namespace serverapi.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly UserManager<AppUser> _userManager;
         private readonly MomoConfig _momoConfig;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
         /// <summary>
         /// </summary>
@@ -42,15 +49,17 @@ namespace serverapi.Controllers
         /// <param name="vnpayConfig"></param>
         /// <param name="momoConfig"></param>
         /// <param name="httpContextAccessor"></param>
+        /// <param name="hubContext"></param>
 
         public PaymentController(
             PetShopDbContext context,
             IHttpContextAccessor httpContextAccessor,
             IOptions<VnPayConfig> vnpayConfig,
             IOptions<MomoConfig> momoConfig,
-            UserManager<AppUser> userManager)
-        => (_context, _httpContextAccessor, _vnpayConfig, _momoConfig, _userManager)
-        = (context, httpContextAccessor, vnpayConfig.Value, momoConfig.Value, userManager);
+            UserManager<AppUser> userManager,
+            IHubContext<NotificationHub> hubContext)
+        => (_context, _httpContextAccessor, _vnpayConfig, _momoConfig, _userManager, _hubContext)
+        = (context, httpContextAccessor, vnpayConfig.Value, momoConfig.Value, userManager, hubContext);
 
         /// <summary>
         /// Payment order with VnPay, Momo, ZaloPay (Authorize)
@@ -248,11 +257,11 @@ namespace serverapi.Controllers
             {
                 return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Failed : {ex.Message} " } });
             }
-            var b = returnUrl;
+            // var b = returnUrl;
             if (returnUrl.EndsWith("/"))
                 returnUrl = returnUrl.Remove(returnUrl.Length - 1, 1);
-            var a = $"{returnUrl}?{returnModel.ToQueryString()}";
-            System.Console.WriteLine("daiuhdauihd");
+            // var a = $"{returnUrl}?{returnModel.ToQueryString()}";
+            // System.Console.WriteLine("daiuhdauihd");
             return Redirect($"{returnUrl}?{returnModel.ToQueryString()}");
         }
 
@@ -313,55 +322,66 @@ namespace serverapi.Controllers
                                 }
 
                                 // create payment trans
-                                // using (var _transaction = _context.Database.BeginTransaction())
-                                // {
-                                try
+                                using (var _transaction = _context.Database.BeginTransaction())
                                 {
-                                    var paymentTransDto = new CreatePaymentTransDto()
+                                    try
                                     {
-                                        PaymentId = vnPayIpnResponseDto.vnp_TxnRef!.Value,
-                                        TranMessage = message,
-                                        TranDate = DateTime.Now,
-                                        TranPayload = JsonConvert.SerializeObject(vnPayIpnResponseDto),
-                                        TranStatus = status,
-                                        TranAmount = vnPayIpnResponseDto.vnp_Amount
-                                    };
+                                        var paymentTransDto = new CreatePaymentTransDto()
+                                        {
+                                            PaymentId = vnPayIpnResponseDto.vnp_TxnRef!.Value,
+                                            TranMessage = message,
+                                            TranDate = DateTime.Now,
+                                            TranPayload = JsonConvert.SerializeObject(vnPayIpnResponseDto),
+                                            TranStatus = status,
+                                            TranAmount = vnPayIpnResponseDto.vnp_Amount
+                                        };
 
-                                    var paymentTrans = paymentTransDto.Adapt<PaymentTransaction>();
-                                    _context.PaymentTransactions.Add(paymentTrans);
-                                    await _context.SaveChangesAsync();
+                                        var paymentTrans = paymentTransDto.Adapt<PaymentTransaction>();
+                                        _context.PaymentTransactions.Add(paymentTrans);
+                                        await _context.SaveChangesAsync();
 
-                                    // update payment
-                                    payment.PaymentLastMessage = paymentTrans.TranMessage;
-                                    payment.PaidAmount = (_context.PaymentTransactions
-                                        .Where(pt => pt.PaymentId == payment.Id && pt.TranStatus == "0")
-                                        .Sum(pt => pt.TranAmount)) / 100;
-                                    payment.PaymentStatus = paymentTrans.TranStatus;
-                                    payment.LastUpdateAt = DateTime.Now;
-                                    // var a = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                                    // System.Console.WriteLine("aldhadh");
-                                    // payment.LastUpdateBy = (await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!))!.Id;
+                                        // update payment
+                                        payment.PaymentLastMessage = paymentTrans.TranMessage;
+                                        payment.PaidAmount = (_context.PaymentTransactions
+                                            .Where(pt => pt.PaymentId == payment.Id && pt.TranStatus == "0")
+                                            .Sum(pt => pt.TranAmount)) / 100;
+                                        payment.PaymentStatus = paymentTrans.TranStatus;
+                                        payment.LastUpdateAt = DateTime.Now;
+                                        // var a = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                                        // System.Console.WriteLine("aldhadh");
+                                        // payment.LastUpdateBy = (await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!))!.Id;
 
-                                    _context.Entry<Payment>(payment).State = EntityState.Modified;
-                                    await _context.SaveChangesAsync();
+                                        // update status for Payment
+                                        _context.Entry<Payment>(payment).State = EntityState.Modified;
+                                        await _context.SaveChangesAsync();
 
-                                    return Ok(new
+                                        // update status for Order
+                                        var order = await _context.Orders.FindAsync(payment.OrderId);
+                                        order!.Status = OrderStatus.Confirmed;
+                                        _context.Entry<Order>(order).State = EntityState.Modified;
+                                        await _context.SaveChangesAsync();
+
+                                        // send 
+                                        string noftiPaymentOrder = $"Đơn hàng #{order.Id} của khách hàng {(await _userManager.FindByIdAsync(order.UserId))?.Name} đã được xác nhận!";
+                                        await _hubContext.Clients.All.SendAsync("ReceiveNotification", noftiPaymentOrder);
+
+                                        return Ok(new
+                                        {
+                                            RspCode = "00",
+                                            Message = "Transaction success!"
+                                        });
+
+                                    }
+                                    catch (Exception ex)
                                     {
-                                        RspCode = "00",
-                                        Message = "Transaction success!"
-                                    });
-
+                                        _transaction.Rollback();
+                                        return Ok(new
+                                        {
+                                            RspCode = "99",
+                                            Message = ex.Message
+                                        });
+                                    }
                                 }
-                                catch (Exception ex)
-                                {
-                                    // _transaction.Rollback();
-                                    return Ok(new
-                                    {
-                                        RspCode = "99",
-                                        Message = ex.Message
-                                    });
-                                }
-                                // }
                             }
                             else
                             {
@@ -517,6 +537,62 @@ namespace serverapi.Controllers
             result.Success = resultData.RspCode == "00";
 
             return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vnPayRefundDto"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("vnpay-refund")]
+        [ProducesResponseType(typeof(BaseResultWithData<string>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> RefundVnPayTransaction(VnPayRefundDto vnPayRefundDto)
+        {
+            var parameters = new Dictionary<string, string>
+            {
+                {"vnp_Version", _vnpayConfig.Version},
+                {"vnp_Command", "refund"},
+                {"vnp_TmnCode", _vnpayConfig.TmnCode},
+                {"vnp_Amount", (vnPayRefundDto.vnp_Amount * 100).ToString()},
+                {"vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss")},
+                {"vnp_TransactionDate", vnPayRefundDto.vnp_TransactionDate.ToString("yyyyMMddHHmmss")},
+                {"vnp_IpAddr", HttpContext.Connection.RemoteIpAddress!.ToString()},
+                {"vnp_TxnRef", vnPayRefundDto.vnp_TxnRef.ToString()},
+                {"vnp_OrderInfo", vnPayRefundDto.vnp_OrderInfo},
+                // {"vnp_SecureHash", }
+            };
+
+            var vnp_SecureHash = ComputeVnpSecureHash(parameters, _vnpayConfig.HashSecret);
+            parameters.Add("vnp_SecureHash", vnp_SecureHash);
+            parameters.Add("vnp_SecureHashType", "SHA256");
+
+            using var client = new HttpClient();
+            var content = new FormUrlEncodedContent(parameters);
+            var response = await client.PostAsync(_vnpayConfig.RefundUrl, content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseString = await response.Content.ReadAsStringAsync();
+                // Parse and handle the response from VNPAY here
+                return Ok(new BaseResultWithData<string>()
+                {
+                    Success = true,
+                    Message = "Refund transaction success!",
+                    Data = responseString
+                }); // Return the response string or a parsed object
+            }
+
+            return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){"Failed to refund transaction"}});
+
+        }
+
+        private string ComputeVnpSecureHash(Dictionary<string, string> parameters, string secretKey)
+        {
+            var signData = secretKey + string.Join("", parameters.OrderBy(d => d.Key).Select(d => d.Key + "=" + HttpUtility.UrlEncode(d.Value)).ToList());
+            using var sha256 = SHA256.Create();
+            var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(signData));
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
         }
 
         private async Task<string> GetPaymentDestinationShortName(int paymentDesId)

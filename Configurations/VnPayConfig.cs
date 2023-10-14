@@ -34,5 +34,9 @@ namespace serverapi.Configurations
         /// 
         /// </summary>
         public string PaymentUrl { get; set;} = string.Empty;
+        /// <summary>
+        /// 
+        /// </summary>
+        public string RefundUrl { get; set; } = string.Empty;
     }
 }

@@ -12,6 +12,7 @@ using PetShop.Configurations;
 using PetShop.Data;
 using serverapi.Configurations;
 using serverapi.Entity;
+using serverapi.Libraries.SignalRs;
 using serverapi.Repository.OrderDetailRepository;
 using serverapi.Repository.OrderRepository;
 using serverapi.Repository.PaymentRepository;
@@ -184,5 +185,7 @@ app.UseCors(options =>
 });
 
 app.MapControllers();
+
+// app.MapHub<NotificationHub>("/notificationHub");
 
 app.Run();

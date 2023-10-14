@@ -4,6 +4,7 @@ using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PetShop.Data;
@@ -11,6 +12,7 @@ using serverapi.Base;
 using serverapi.Dtos.Orders;
 using serverapi.Entity;
 using serverapi.Enum;
+using serverapi.Libraries.SignalRs;
 
 namespace PetShop.Controllers
 {
@@ -23,12 +25,14 @@ namespace PetShop.Controllers
     {
         private readonly PetShopDbContext _context;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="context"></param>
         /// <param name="userManager"></param>
+        /// <param name="hubContext"></param>
         public OrderController(PetShopDbContext context, UserManager<AppUser> userManager)
         {
             _context = context;
