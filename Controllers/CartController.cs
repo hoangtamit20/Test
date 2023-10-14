@@ -50,7 +50,7 @@ namespace serverapi.Controllers
         /// </remarks>
         [HttpGet]
         [Authorize]
-        [ProducesResponseType(typeof(List<CartInfoDto>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseResultWithData<List<CartInfoDto>>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetCartsByUserName(string? language)
         {

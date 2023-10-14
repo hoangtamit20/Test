@@ -259,7 +259,7 @@ namespace PetShop.Controllers
                             // generate token
                             var tokenReset = await _userManager.GeneratePasswordResetTokenAsync(userExist);
                             // process send email service
-                            var uriBuilder = new UriBuilder("http://example.com/confirmEmail");
+                            var uriBuilder = new UriBuilder("http://localhost:3000/update-password");
                             var parameters = HttpUtility.ParseQueryString(string.Empty);
                             parameters["id"] = userExist.Id.ToString();
                             parameters["token"] = tokenReset;
