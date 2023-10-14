@@ -295,6 +295,31 @@ namespace PetShop.Controllers
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("decode-token-resetpassword")]
+        public IActionResult DecodeToken(string token)
+        {
+            try
+            {
+                return Ok(new BaseResultWithData<string>()
+                {
+                    Success = true,
+                    Message = "Decode token success!",
+                    Data = Uri.UnescapeDataString(token)
+                });
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){$"{ex.Message}"}});
+            }
+        }
+
+
 
         /// <summary>
         /// 
