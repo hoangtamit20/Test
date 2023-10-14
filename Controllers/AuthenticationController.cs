@@ -213,13 +213,18 @@ namespace PetShop.Controllers
             else
             {
                 // Gọi hàm GenerateJwtToken để tạo ra jwt token từ đối tượng NguoiDung
-                var jwtToken = await JwtToken.GenerateJwtToken(_userManager, nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
+                var jwtToken = await JwtToken.GenerateJwtToken(_userManager, nd, _configuration.GetSection("JwtConfig:SecretKey").Value!);
+                if (nd.ImageUrl is null)
+                {
+                    nd.ImageUrl = nguoiDung.ImageUrl;
+                }
+                await _userManager.UpdateAsync(nd);
 
                 // Trả về jwt token cho client
                 return Ok(new JwtResponseModel<UserDataDto>()
                 {
                     Result = true,
-                    Data = userInfo.Adapt<UserDataDto>(),
+                    Data = nd.Adapt<UserDataDto>(),
                     Token = jwtToken.AccessToken!,
                     RefreshToken = jwtToken.RefreshToken!
                 });
