@@ -3,6 +3,7 @@ using System.Text;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -70,7 +71,7 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(path);
 });
 // add PetShopDbContext
-builder.Services.AddDbContext<PetShopDbContext>(options =>
+builder.Services.AddDbContextFactory<PetShopDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
@@ -119,7 +120,9 @@ builder.Services.AddAuthorization(
 
 builder.Services.AddIdentityCore<AppUser>()
                 .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<PetShopDbContext>();
+                .AddEntityFrameworkStores<PetShopDbContext>()
+                .AddDefaultTokenProviders(); // -> to generate token
+                
 
 
 // add service
@@ -155,6 +158,9 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.SuppressModelStateInvalidFilter = true;
 });
+
+// add sendmail service
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 
 var app = builder.Build();

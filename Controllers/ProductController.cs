@@ -159,13 +159,12 @@ namespace serverapi.Controllers
         ///     GET : Api get product by id
         /// 
         /// </remarks>
-        // GET: api/Category/5
         [HttpGet("{id}")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ProductInfoDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.InternalServerError)]
-        public async Task<ActionResult> GetCategory(int id, string idLanguage)
+        public async Task<ActionResult> GetProductById(int id, string idLanguage)
         {
             if (_dbContext.Products == null)
             {
@@ -176,14 +175,14 @@ namespace serverapi.Controllers
             {
                 return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Product with id : {id} not found" } });
             }
-            if (_dbContext.ProductTranslations.FirstOrDefaultAsync(p => p.ProductId == id) is null)
+            if (await _dbContext.ProductTranslations.FirstOrDefaultAsync(p => p.ProductId == id) is null)
             {
                 return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"ProductTranslation with IdProduct : {id} not found" } });
             }
             return Ok(new BaseResultWithData<ProductInfoDto>()
             {
                 Success = true,
-                Message = "Get category by id",
+                Message = "Get product by id",
                 Data = (await GetListProductsAsync(idLanguage)).Find(p => p.Id == id)
             });
         }

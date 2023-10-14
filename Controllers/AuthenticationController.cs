@@ -2,12 +2,14 @@ using System.Net;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using PetShop.Models;
 using PetShop.Services;
 using serverapi.Base;
 using serverapi.Dtos.Auths;
 using serverapi.Entity;
+using serverapi.Services;
 using serverapi.Services.Iservice;
 
 namespace PetShop.Controllers
@@ -27,6 +29,8 @@ namespace PetShop.Controllers
         private readonly IGoogleService _googleService;
         // private readonly JwtConfig _jwtConfig;
         private readonly IConfiguration _configuration;
+
+        private readonly IEmailSender _emailSender;
         /// <summary>
         /// 
         /// </summary>
@@ -34,7 +38,8 @@ namespace PetShop.Controllers
         /// <param name="roleManager"></param>
         /// <param name="configuration"></param>
         /// <param name="googleService"></param>
-        public AuthenticationController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IGoogleService googleService) => (_userManager, _roleManager, _configuration, _googleService) = (userManager, roleManager, configuration, googleService);
+        /// <param name="emailSender"></param>
+        public AuthenticationController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IGoogleService googleService, IEmailSender emailSender) => (_userManager, _roleManager, _configuration, _googleService, _emailSender) = (userManager, roleManager, configuration, googleService, emailSender);
 
 
         /// <summary>
@@ -103,7 +108,7 @@ namespace PetShop.Controllers
                     }
                 });
             }
-            return BadRequest(new BaseBadRequestResult(){Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()});
+            return BadRequest(new BaseBadRequestResult() { Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList() });
         }
 
         /// <summary>
@@ -129,11 +134,11 @@ namespace PetShop.Controllers
                 var nguoiDung = await _userManager.FindByEmailAsync(loginResponse.UserName!);
                 if (nguoiDung is null)
                 {
-                    return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){"Tên đăng nhập không tồn tại!"}});
+                    return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { "Tên đăng nhập không tồn tại!" } });
                 }
                 var isCorrect = await _userManager.CheckPasswordAsync(nguoiDung, loginResponse.Password!);
                 if (!isCorrect)
-                    return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){"Mật khẩu không đúng!"}});
+                    return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { "Mật khẩu không đúng!" } });
                 var jwtToken = await JwtToken.GenerateJwtToken(_userManager, nguoiDung, _configuration.GetSection("JwtConfig:SecretKey").Value!);
                 return Ok(new JwtResponseModel<UserDataDto>()
                 {
@@ -143,7 +148,7 @@ namespace PetShop.Controllers
                     Data = nguoiDung.Adapt<UserDataDto>()
                 });
             }
-            return BadRequest(new BaseBadRequestResult(){Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()});
+            return BadRequest(new BaseBadRequestResult() { Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList() });
         }
 
 
@@ -202,7 +207,7 @@ namespace PetShop.Controllers
                         RefreshToken = tokenCreate.RefreshToken!
                     });
                 }
-                return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){"Create user failed!"}});
+                return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { "Create user failed!" } });
             }
             else
             {
@@ -219,6 +224,79 @@ namespace PetShop.Controllers
                 });
             }
         }
+
+        /// <summary>
+        /// Reset password
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        /// <remarks>
+        ///     POST:
+        /// {
+        ///     "email":"hoangtamit20@gmail.com",
+        ///     "newPassword":"New=Password=OK",
+        ///     "reNewPassword":"New=Password=OK"
+        /// }
+        /// </remarks>
+        [HttpPost]
+        [Route("reset-password")]
+        [ProducesResponseType(typeof(BaseResultSuccess), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> ResetPassword([FromBody] string email)
+        {
+            if (ModelState.IsValid)
+            {
+                var userExist = await _userManager.FindByEmailAsync(email);
+                // check user exists
+                if (userExist is not null)
+                {
+                    // generate token
+                    var tokenReset = await _userManager.GeneratePasswordResetTokenAsync(userExist);
+                    // process send email service
+                    var callbackUrl = Url.RouteUrl(
+                        "DefaultApi",
+                        new { controller = "Account", action = "ResetPassword", userId = userExist.Id, code = tokenReset },
+                        Request.Scheme);
+                    await _emailSender.SendEmailAsync(email, "Reset Password", $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+                    return Ok(new BaseResultSuccess() { Message = $"Please confirm email to change password!" });
+                }
+                return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Email : {email} not exists" } });
+            }
+            return BadRequest(new BaseBadRequestResult() { Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList() });
+        }
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="resetPasswordConfirmRequestDto"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("reset-password-confirm")]
+        public async Task<IActionResult> ResetPasswordConfirm([FromBody] ResetPasswordConfirmRequestDto resetPasswordConfirmRequestDto)
+        {
+            if (ModelState.IsValid)
+            {
+                var userExist = await _userManager.FindByIdAsync(resetPasswordConfirmRequestDto.UserId);
+                // check user exists
+                if (userExist is not null)
+                {
+                    var resetPassResult = await _userManager.ResetPasswordAsync(userExist, resetPasswordConfirmRequestDto.Token, resetPasswordConfirmRequestDto.NewPassword);
+                    if (resetPassResult.Succeeded)
+                    {
+                        return Ok(new BaseResultSuccess() { Message = "Change password successed!" });
+                    }
+                    else
+                    {
+                        return BadRequest(new BaseBadRequestResult() { Errors = resetPassResult.Errors.Select(e => e.Description).ToList() });
+                    }
+                }
+                return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"User Id : {resetPasswordConfirmRequestDto.UserId} not exists" } });
+            }
+            return BadRequest(new BaseBadRequestResult() { Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList() });
+        }
+
 
 
         /// <summary>
