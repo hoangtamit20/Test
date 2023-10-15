@@ -64,6 +64,10 @@ namespace serverapi.Dtos.Products
         /// <summary>
         /// 
         /// </summary>
+        public int ViewCount { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public string Thumbnail { get; set; } = string.Empty;
         /// <summary>
         /// 

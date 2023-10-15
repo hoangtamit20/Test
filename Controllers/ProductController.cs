@@ -72,7 +72,7 @@ namespace serverapi.Controllers
             var filteredAndPagedProducts = service.FilterAndPage(data, pagingFilterDto,
                 product => (
                     product.Name.Contains(pagingFilterDto.Filter!)
-                    && product.Details!.Contains(pagingFilterDto.Filter!)) 
+                    && product.Details!.Contains(pagingFilterDto.Filter!))
                     || product.CategoryName!.Contains(pagingFilterDto.Filter!
                 ),
                 product => product.CategoryId == pagingFilterDto.CategoryId,
@@ -140,9 +140,9 @@ namespace serverapi.Controllers
             var data = await GetListProductsAsync(idLanguage);
             var service = new PagingFilterService<ProductInfoDto>();
             var filteredAndPagedProducts = service.FilterAndPage(
-                data, 
+                data,
                 pagingFilterDto,
-                product => product.Name.ToLower().Contains(pagingFilterDto.Filter!.ToLower()) 
+                product => product.Name.ToLower().Contains(pagingFilterDto.Filter!.ToLower())
                     || product.CategoryName!.ToLower().Contains(pagingFilterDto.Filter!.ToLower()),
                 product => product.CategoryId == pagingFilterDto.CategoryId,
                 product => product.Name);
@@ -187,12 +187,22 @@ namespace serverapi.Controllers
             {
                 return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"ProductTranslation with IdProduct : {id} not found" } });
             }
-            return Ok(new BaseResultWithData<ProductInfoDto>()
+            product.ViewCount += 1;
+            _dbContext.Entry<Product>(product).State = EntityState.Modified;
+            try
             {
-                Success = true,
-                Message = "Get product by id",
-                Data = (await GetListProductsAsync(idLanguage)).Find(p => p.Id == id)
-            });
+                await _dbContext.SaveChangesAsync();
+                return Ok(new BaseResultWithData<ProductInfoDto>()
+                {
+                    Success = true,
+                    Message = "Get product by id",
+                    Data = (await GetListProductsAsync(idLanguage)).Find(p => p.Id == id)
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"{ex.Message}" } });
+            }
         }
 
         /// <summary>
@@ -284,7 +294,7 @@ namespace serverapi.Controllers
             var product = await _dbContext.Products.FindAsync(id);
             if (product == null)
             {
-                return NotFound(new BaseBadRequestResult(){Errors = new List<string>(){"Db Product is null!"}});
+                return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { "Db Product is null!" } });
             }
 
             using (var _transaction = await _dbContext.Database.BeginTransactionAsync())
@@ -389,32 +399,64 @@ namespace serverapi.Controllers
             }
         }
 
+        /// <summary>
+        /// Get top 10 product have most view (for slide home page)
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("list-product-best-view")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(BaseResultWithData<List<ProductInfoDto>>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> Top10ProductBestView(string language)
+        {
+            return Ok(new BaseResultWithData<List<ProductInfoDto>>()
+            {
+                Success = true,
+                Message = "Top 10 product best view",
+                Data = (await GetListProductsAsync(language ?? "VN")).OrderBy(p => p.ViewCount).Take(10).ToList()
+            });
+        }
+
+        // [HttpGet]
+        // [Route("list-product-best-view")]
+        // [AllowAnonymous]
+        // public async Task<IActionResult> Top10ProductBestSales(string language)
+        // {
+        //     return Ok(new BaseResultWithData<List<ProductInfoDto>>()
+        //     {
+        //         Success = true,
+        //         Message = $"Top 10 product best sales",
+        //         Data = GetListProductIsDiscountAsync(language ?? "VN").Where(p => p.)
+        //     });
+        // }
+
         private async Task<List<ProductInfoDto>> GetListProductNoDiscountAsync(string? language)
-            => await GetListProductIsDiscountAsync(language, false);
+            => await GetListProductIsDiscountAsync(language, false, DateTime.Now);
 
         private async Task<List<ProductInfoDto>> GetListProductDiscountAsync(string? language)
-            => await GetListProductIsDiscountAsync(language, true);
+            => await GetListProductIsDiscountAsync(language, true, DateTime.Now);
 
         private async Task<List<ProductInfoDto>> GetListProductsAsync(string? language)
         {
-            var a = await GetListProductIsDiscountAsync(language, true);
-            var b = await GetListProductIsDiscountAsync(language, false);
+            var a = await GetListProductIsDiscountAsync(language, true, DateTime.Now);
+            var b = await GetListProductIsDiscountAsync(language, false, DateTime.Now);
             a.AddRange(b);
             return a;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="language">LanguageId to display</param>
-        /// <param name="isDiscount">False : List product non discount; True : Listproduct discount</param>
-        /// <returns></returns>
-        private async Task<List<ProductInfoDto>> GetListProductIsDiscountAsync(string? language, bool isDiscount)
+        // private IQueryable<Product> QueryableProductForStatistical(string language)
+        // {
+        //     return _dbContext.Products
+        //             .Include(p => p.ProductTranslations)
+        //             .Include(p => p.OrderDetails).ThenInclude(ord => ord.Order)
+        //             .Where(p => p.);
+        // }
+
+        private IQueryable<Product> QueryableProductAsync(string language, bool isDiscount, DateTime currentDate)
         {
             language = language ?? "VN";
-            var currentDate = DateTime.Now;
-
-            var discountedProducts = await _dbContext.Products
+            currentDate = DateTime.Now;
+            var discountedProducts = _dbContext.Products
                 .Include(p => p.ProductTranslations)
                 .ThenInclude(pt => pt.Language)
                 .Include(p => p.ProductImages)
@@ -424,8 +466,26 @@ namespace serverapi.Controllers
                 .ThenInclude(c => c.CategoryTranslations)
                 .ThenInclude(ct => ct.Language)
                 .Include(p => p.Category.PromotionCategories).ThenInclude(pr => pr.Promotion)
-                .Where(p => (p.PromotionProducts.Any(pp => pp.Promotion!.FromDate <= currentDate && pp.Promotion.ToDate >= currentDate) ||
-                            p.Category.PromotionCategories.Any(pc => pc.Promotion!.FromDate <= currentDate && pc.Promotion.ToDate >= currentDate)) == isDiscount)
+                .Where(p => (p.PromotionProducts
+                                .Any(pp => pp.Promotion!.FromDate <= currentDate
+                                    && pp.Promotion.ToDate >= currentDate)
+                                    || p.Category.PromotionCategories
+                                        .Any(pc => pc.Promotion!.FromDate <= currentDate
+                                            && pc.Promotion.ToDate >= currentDate)) == isDiscount);
+            return discountedProducts;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="language">LanguageId to display</param>
+        /// <param name="currentDate"></param>
+        /// <param name="isDiscount">False : List product non discount; True : Listproduct discount</param>
+        /// <returns></returns>
+        private async Task<List<ProductInfoDto>> GetListProductIsDiscountAsync(string? language, bool isDiscount, DateTime currentDate)
+        {
+            return await QueryableProductAsync(language ?? "VN", isDiscount, currentDate)
                 .Select(p => new ProductInfoDto
                 {
                     Id = p.Id,
@@ -484,7 +544,6 @@ namespace serverapi.Controllers
                 .OrderBy(p => p.Id)
                 .ThenBy(p => p.CategoryId)
                 .ToListAsync();
-            return discountedProducts;
         }
     }
 }

@@ -173,7 +173,7 @@ namespace serverapi.Controllers
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){$"{ex.Message}"}});
+                    return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"{ex.Message}" } });
                 }
             }
         }
@@ -182,8 +182,7 @@ namespace serverapi.Controllers
         /// <summary>
         /// Update quantity for product in cart (User)
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="quantity"></param>
+        /// <param name="updateCartItemsDto"></param>
         /// <returns></returns>
         [HttpPut]
         [Authorize(Roles = "User")]
@@ -192,25 +191,45 @@ namespace serverapi.Controllers
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateQuantityCartItems(int id, int quantity)
+        public async Task<IActionResult> UpdateQuantityCartItems(UpdateCartItemsDto updateCartItemsDto)
         {
-            var currentUser = await _userManager.GetUserAsync(User);
-            // check is authorize
-            if (currentUser is null)
-                return Unauthorized(new BaseBadRequestResult() { Errors = new List<string>() { "Unauthorized" } });
-            var product = await _context.Products.FindAsync(id);
-            if (product is null)
-                return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Product with Id : {id} not found!" } });
-            if (quantity < 0)
-                return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Value of id : {id} in valid!" } });
-            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == currentUser.Id);
-            var cartItems = await _context.CartItems.FirstOrDefaultAsync(ct => (ct.ProductId == id) && (ct.CartId == cart!.Id));
-            // if quantity = 0 -> remove product from cart
-            if (quantity == 0)
+            if (ModelState.IsValid)
             {
+                var currentUser = await _userManager.GetUserAsync(User);
+                // check is authorize
+                if (currentUser is null)
+                    return Unauthorized(new BaseBadRequestResult() { Errors = new List<string>() { "Unauthorized" } });
+                var product = await _context.Products.FindAsync(updateCartItemsDto.ProductId);
+                if (product is null)
+                    return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Product with Id : {updateCartItemsDto.ProductId} not found!" } });
+                if (updateCartItemsDto.Quantity < 0)
+                    return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Value of id : {updateCartItemsDto.ProductId} in valid!" } });
+                var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == currentUser.Id);
+                var cartItem = await _context.CartItems
+                    .FirstOrDefaultAsync(ct =>
+                        (ct.ProductId == updateCartItemsDto.ProductId)
+                        && ct.Cart.UserId == currentUser.Id);
+                // if quantity = 0 -> remove product from cart
+                if (cartItem is null)
+                    return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Cannot find cart item." } });
+                if (updateCartItemsDto.Quantity == 0)
+                {
+                    try
+                    {
+                        _context.CartItems.Remove(cartItem);
+                        await _context.SaveChangesAsync();
+                        return NoContent();
+                    }
+                    catch (Exception ex)
+                    {
+                        return StatusCode(500, new BaseBadRequestResult() { Errors = new List<string>() { $"Internal Server Error - {ex.Message}" } });
+                    }
+                }
+                // update quantity for product of cartitem
+                cartItem.Quantity = updateCartItemsDto.Quantity;
+                _context.Entry<CartItems>(cartItem).State = EntityState.Modified;
                 try
                 {
-                    _context.CartItems.Remove(cartItems!);
                     await _context.SaveChangesAsync();
                     return NoContent();
                 }
@@ -219,18 +238,7 @@ namespace serverapi.Controllers
                     return StatusCode(500, new BaseBadRequestResult() { Errors = new List<string>() { $"Internal Server Error - {ex.Message}" } });
                 }
             }
-            // update quantity for product of cartitem
-            cartItems!.Quantity = quantity;
-            _context.Entry<CartItems>(cartItems).State = EntityState.Modified;
-            try
-            {
-                await _context.SaveChangesAsync();
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new BaseBadRequestResult() { Errors = new List<string>() { $"Internal Server Error - {ex.Message}" } });
-            }
+            return BadRequest(new BaseBadRequestResult() { Errors = ModelState.SelectMany(x => x.Value!.Errors.Select(p => p.ErrorMessage)).ToList()});
         }
 
 
