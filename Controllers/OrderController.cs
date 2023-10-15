@@ -145,87 +145,81 @@ namespace PetShop.Controllers
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.InternalServerError)]
         public async Task<ActionResult> PostOrder([FromBody] CreateOrderDto createOrderDto)
         {
-            if (createOrderDto.ListProductOrder.IsNullOrEmpty())
+            if (ModelState.IsValid)
             {
-                return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"There are no products to place an order" } });
-            }
-            var listError = checkValidQuantityOfProductOrder(createOrderDto.ListProductOrder);
-            if (listError.Count > 0)
-            {
-                return BadRequest(new BaseBadRequestResult() { Errors = listError });
-            }
-            if (_context.Orders == null)
-            {
-                return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Db 'Order' is null!" } });
-            }
-
-            using (var _transaction = _context.Database.BeginTransaction())
-            {
-                try
+                if (createOrderDto.ListProductOrder.IsNullOrEmpty())
                 {
-                    // process create order
-                    var order = createOrderDto.Adapt<Order>();
-                    var claimValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                    if (claimValue == null)
+                    return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"There are no products to place an order" } });
+                }
+                var listError = checkValidQuantityOfProductOrder(createOrderDto.ListProductOrder);
+                if (listError.Count > 0)
+                {
+                    return BadRequest(new BaseBadRequestResult() { Errors = listError });
+                }
+                if (_context.Orders == null)
+                {
+                    return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Db 'Order' is null!" } });
+                }
+
+                using (var _transaction = _context.Database.BeginTransaction())
+                {
+                    try
                     {
-                        // Handle the case where the claim is not found
-                        return Unauthorized(new BaseBadRequestResult() { Errors = new List<string>() { $"the claim is not found" } });
-                    }
-                    else
-                    {
-                        var user = await _userManager.FindByEmailAsync(claimValue);
-                        if (user == null)
+                        // process create order
+                        var order = createOrderDto.Adapt<Order>();
+                        var currentUser = await _userManager.GetUserAsync(User);
+                        if (currentUser == null)
                         {
-                            // Handle the case where the user is not found
-                            return Unauthorized(new BaseBadRequestResult() { Errors = new List<string>() { $"User information not found" } });
+                            // Handle the case where the claim is not found
+                            return Unauthorized(new BaseBadRequestResult() { Errors = new List<string>() { $"the claim is not found" } });
                         }
                         else
                         {
-                            order.UserId = user.Id;
-                            _context.Orders.Add(order);
-                            order.Status = OrderStatus.InProgress;
-                            await _context.SaveChangesAsync();
-                            // Continue with your logic here
+                                order.UserId = currentUser.Id;
+                                _context.Orders.Add(order);
+                                order.Status = OrderStatus.InProgress;
+                                await _context.SaveChangesAsync();
                         }
-                    }
-                    // add product to order details
-                    var listOrderDetail = createOrderDto.ListProductOrder.Adapt<List<OrderDetail>>();
-                    decimal totalPrice = 0;
-                    foreach (var orderDetail in listOrderDetail)
-                    {
-                        var product = await _context.Products.FindAsync(orderDetail.ProductId);
-                        if (product == null)
+                        // add product to order details
+                        var listOrderDetail = createOrderDto.ListProductOrder.Adapt<List<OrderDetail>>();
+                        decimal totalPrice = 0;
+                        foreach (var orderDetail in listOrderDetail)
                         {
-                            // Handle the case where the product does not exist
-                            listError.Add($"Product with Id : {orderDetail.ProductId} does not exists");
-                            continue;
+                            var product = await _context.Products.FindAsync(orderDetail.ProductId);
+                            if (product == null)
+                            {
+                                // Handle the case where the product does not exist
+                                listError.Add($"Product with Id : {orderDetail.ProductId} does not exists");
+                                continue;
+                            }
+                            // check product has apply discount
+
+                            var price = product.Price - (await GetPriceProductOrder(product));
+                            orderDetail.OrderId = order.Id;
+                            totalPrice += price * orderDetail.Quantity;
+                            orderDetail.SubTotal = price * orderDetail.Quantity;
                         }
-                        // check product has apply discount
+                        order.TotalPrice = totalPrice;
+                        _context.Entry<Order>(order).State = EntityState.Modified;
+                        await _context.OrderDetails.AddRangeAsync(listOrderDetail);
+                        await _context.SaveChangesAsync();
+                        _transaction.Commit();
 
-                        var price = product.Price - (await GetPriceProductOrder(product));
-                        orderDetail.OrderId = order.Id;
-                        totalPrice += price * orderDetail.Quantity;
-                        orderDetail.SubTotal = price * orderDetail.Quantity;
+                        return Ok(new BaseResultWithData<OrderInfoDto>
+                        {
+                            Success = true,
+                            Message = "Create Order",
+                            Data = order.Adapt<OrderInfoDto>()
+                        });
                     }
-                    order.TotalPrice = totalPrice;
-                    _context.Entry<Order>(order).State = EntityState.Modified;
-                    await _context.OrderDetails.AddRangeAsync(listOrderDetail);
-                    await _context.SaveChangesAsync();
-                    _transaction.Commit();
-
-                    return Ok(new BaseResultWithData<OrderInfoDto>
+                    catch (Exception ex)
                     {
-                        Success = true,
-                        Message = "Create Order",
-                        Data = order.Adapt<OrderInfoDto>()
-                    });
-                }
-                catch (Exception ex)
-                {
-                    _transaction.Rollback();
-                    return StatusCode(500, new BaseBadRequestResult() { Errors = new List<string>() { $"Internal Server Error - {ex.Message}" } });
+                        _transaction.Rollback();
+                        return StatusCode(500, new BaseBadRequestResult() { Errors = new List<string>() { $"Internal Server Error - {ex.Message}" } });
+                    }
                 }
             }
+            return BadRequest(new BaseBadRequestResult(){Errors = ModelState.SelectMany(x => x.Value!.Errors.Select(p => p.ErrorMessage)).ToList()});
         }
 
         /// <summary>

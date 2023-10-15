@@ -51,7 +51,13 @@ public partial class Product
     /// <summary>
     /// 
     /// </summary>
+    public string Thumbnail { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 
+    /// </summary>
     public int CategoryId { get; set; }
+
 
     /// <summary>
     /// 

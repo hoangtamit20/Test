@@ -357,6 +357,41 @@ namespace serverapi.Controllers
                                         _context.Entry<Order>(order).State = EntityState.Modified;
                                         await _context.SaveChangesAsync();
 
+                                        //remove all product items were payment in customer's cart
+                                        var orderDetailOfCurrentOrder = await _context.OrderDetails.Where(odl => odl.OrderId == order.Id).ToListAsync();
+                                        foreach(var odDetail in orderDetailOfCurrentOrder)
+                                        {
+                                            var cartItem = await _context.CartItems.FirstOrDefaultAsync(cartItem => cartItem.ProductId == odDetail.ProductId);
+                                            if (cartItem is not null)
+                                            {
+                                                // check if quantity of product in cart > quantity of order then subst quantity in cart
+                                                if (cartItem.Quantity > odDetail.Quantity)
+                                                {
+                                                    cartItem.Quantity -= odDetail.Quantity;
+                                                    _context.Entry<CartItems>(cartItem).State = EntityState.Modified;
+                                                }
+                                                // remove product in cart
+                                                else
+                                                {
+                                                    _context.CartItems.Remove(cartItem);
+                                                }
+                                                try
+                                                {
+                                                    await _context.SaveChangesAsync();
+                                                }
+                                                catch(Exception ex)
+                                                {
+                                                    return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){$"{ex.Message}"}});
+                                                }
+                                            }
+                                        }
+                                        var listCartItemRemove = await _context.CartItems
+                                            .Where(cartItem => orderDetailOfCurrentOrder
+                                                .Any(odd => odd.ProductId == cartItem.ProductId))
+                                            .ToListAsync();
+                                        _context.CartItems.RemoveRange(listCartItemRemove);
+                                        await _context.SaveChangesAsync();
+
                                         // send nofti
                                         string noftiPaymentOrder = $"Đơn hàng #{order.Id} của khách hàng {(await _userManager.FindByIdAsync(order.UserId))?.Name} đã được xác nhận!";
                                         await _hubContext.Clients.All.SendAsync("ReceiveNotification", noftiPaymentOrder);

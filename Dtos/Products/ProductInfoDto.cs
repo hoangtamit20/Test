@@ -64,6 +64,10 @@ namespace serverapi.Dtos.Products
         /// <summary>
         /// 
         /// </summary>
+        public string Thumbnail { get; set; } = string.Empty;
+        /// <summary>
+        /// 
+        /// </summary>
         public List<ProductImageDtos> ListProductImage { get; set; } = new List<ProductImageDtos>();
         /// <summary>
         /// 

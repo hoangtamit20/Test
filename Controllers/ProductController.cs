@@ -66,12 +66,15 @@ namespace serverapi.Controllers
         [ProducesResponseType(typeof(BasePagingData<List<ProductInfoDto>>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAllProductDiscount()
         {
-            
             var pagingFilterDto = new PagingFilterDto();
             var data = await GetListProductDiscountAsync("VN");
             var service = new PagingFilterService<ProductInfoDto>();
             var filteredAndPagedProducts = service.FilterAndPage(data, pagingFilterDto,
-                product => product.Name.Contains(pagingFilterDto.Filter!) || product.CategoryName!.Contains(pagingFilterDto.Filter!),
+                product => (
+                    product.Name.Contains(pagingFilterDto.Filter!)
+                    && product.Details!.Contains(pagingFilterDto.Filter!)) 
+                    || product.CategoryName!.Contains(pagingFilterDto.Filter!
+                ),
                 product => product.CategoryId == pagingFilterDto.CategoryId,
                 product => product.Name);
             var totalPage = (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize);
@@ -437,6 +440,7 @@ namespace serverapi.Controllers
                     SeoDescription = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.SeoDescription,
                     SeoTitle = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.SeoTitle,
                     SeoAlias = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.SeoAlias,
+                    Thumbnail = p.Thumbnail,
                     ListProductImage = p.ProductImages.Select(pi => new ProductImageDtos
                     {
                         Id = pi.Id,
