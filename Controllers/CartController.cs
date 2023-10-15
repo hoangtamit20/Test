@@ -62,7 +62,7 @@ namespace serverapi.Controllers
                 .ThenInclude(c => c.User)
                 .Include(ct => ct.Product)
                 .ThenInclude(p => p.ProductTranslations)
-                .Where(ct => ct.Cart.User.Email == currentUser.Email)
+                .Where(ct => ct.Cart.UserId == currentUser.Id)
                 .Select(ct => new CartInfoDto
                 {
                     Id = ct.Id,
@@ -152,13 +152,29 @@ namespace serverapi.Controllers
             else // if cart is not null then add cart item to cart
             {
                 var cartItemExists = await _context.CartItems.FirstOrDefaultAsync(ct => ct.ProductId == id);
-                await _context.CartItems.AddAsync(new CartItems()
+                if (cartItemExists is not null)
                 {
-                    ProductId = id,
-                    CartId = cart.Id,
-                    Quantity = cartItemExists is null ? 1 : (cartItemExists.Quantity + 1)
-                });
-                return Ok($"Add Product with ID : {id} to cart success");
+                    cartItemExists.Quantity += 1;
+                    _context.Entry<CartItems>(cartItemExists).State = EntityState.Modified;
+                }
+                else
+                {
+                    await _context.CartItems.AddAsync(new CartItems()
+                    {
+                        ProductId = id,
+                        CartId = cart.Id,
+                        Quantity = 1
+                    });
+                }
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    return Ok($"Add Product with ID : {id} to cart success");
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){$"{ex.Message}"}});
+                }
             }
         }
 
@@ -264,16 +280,16 @@ namespace serverapi.Controllers
         {
             var cartItems = await _context.CartItems.FindAsync(id);
             if (cartItems is null)
-                return NotFound(new BaseBadRequestResult(){Errors = new List<string>(){"Db cart items is null!"}});
+                return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { "Db cart items is null!" } });
             try
             {
                 _context.CartItems.Remove(cartItems);
                 await _context.SaveChangesAsync();
                 return NoContent();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return StatusCode(500, new BaseBadRequestResult() { Errors = new List<string>() { $"Internal Server Error - {ex.Message}" } }); 
+                return StatusCode(500, new BaseBadRequestResult() { Errors = new List<string>() { $"Internal Server Error - {ex.Message}" } });
             }
         }
     }

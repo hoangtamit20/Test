@@ -25,14 +25,12 @@ namespace PetShop.Controllers
     {
         private readonly PetShopDbContext _context;
         private readonly UserManager<AppUser> _userManager;
-        private readonly IHubContext<NotificationHub> _hubContext;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="context"></param>
         /// <param name="userManager"></param>
-        /// <param name="hubContext"></param>
         public OrderController(PetShopDbContext context, UserManager<AppUser> userManager)
         {
             _context = context;

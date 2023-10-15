@@ -290,7 +290,6 @@ namespace serverapi.Controllers
         [Route("check-payment")]
         public async Task<IActionResult> CheckPayment([FromQuery] VnPayIpnResponseDto vnPayIpnResponseDto)
         {
-
             try
             {
                 // check valid signature
@@ -347,9 +346,6 @@ namespace serverapi.Controllers
                                             .Sum(pt => pt.TranAmount)) / 100;
                                         payment.PaymentStatus = paymentTrans.TranStatus;
                                         payment.LastUpdateAt = DateTime.Now;
-                                        // var a = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                                        // System.Console.WriteLine("aldhadh");
-                                        // payment.LastUpdateBy = (await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!))!.Id;
 
                                         // update status for Payment
                                         _context.Entry<Payment>(payment).State = EntityState.Modified;
@@ -361,64 +357,37 @@ namespace serverapi.Controllers
                                         _context.Entry<Order>(order).State = EntityState.Modified;
                                         await _context.SaveChangesAsync();
 
-                                        // send 
+                                        // send nofti
                                         string noftiPaymentOrder = $"Đơn hàng #{order.Id} của khách hàng {(await _userManager.FindByIdAsync(order.UserId))?.Name} đã được xác nhận!";
                                         await _hubContext.Clients.All.SendAsync("ReceiveNotification", noftiPaymentOrder);
 
-                                        return Ok(new
-                                        {
-                                            RspCode = "00",
-                                            Message = "Transaction success!"
-                                        });
-
+                                        return Ok(new{RspCode = "00", Message = "Transaction success!"});
                                     }
                                     catch (Exception ex)
                                     {
                                         _transaction.Rollback();
-                                        return Ok(new
-                                        {
-                                            RspCode = "99",
-                                            Message = ex.Message
-                                        });
+                                        return Ok(new{RspCode = "99", Message = $"{ex.Message}"});
                                     }
                                 }
                             }
                             else
                             {
-                                return Ok(new
-                                {
-                                    RspCode = "02",
-                                    Message = "Order already confirmed"
-                                });
+                                return Ok(new{RspCode = "02", Message = "Order already confirmed"});
                             }
                         }
                         else
                         {
-                            return Ok(new
-                            {
-                                RspCode = "04",
-                                Message = "Invalid amount"
-                            });
+                            return Ok(new{RspCode = "04", Message = "Invalid amount"});
                         }
                     }
                     else
                     {
-                        return Ok(new
-                        {
-                            RspCode = "01",
-                            Message = "Order not found"
-                        });
+                        return Ok(new{RspCode = "01", Message = "Order not found"});
                     }
-
                 }
                 else
                 {
-                    return Ok(new
-                    {
-                        RspCode = "97",
-                        Message = "Invalid Signature"
-                    });
-
+                    return Ok(new{RspCode = "97", Message = "Invalid Signature"});
                 }
             }
             catch (Exception ex)
@@ -430,113 +399,6 @@ namespace serverapi.Controllers
                     Message = $"Input required data - {ex.Message}"
                 });
             }
-        }
-
-
-
-        private async Task<BaseResultWithData<VnPayIpnResponseDto>> ProcessVnPayIpn(VnPayIpnResponseDto vnPayIpnResponseDto)
-        {
-            var result = new BaseResultWithData<VnPayIpnResponseDto>();
-            var resultData = new VnPayIpnResponseDto();
-            try
-            {
-                // check valid signature
-                var isValidSignature = vnPayIpnResponseDto.IsValidSignature(_vnpayConfig.HashSecret);
-                if (isValidSignature)
-                {
-                    // get payment required
-                    var payment = await _context.Payments.FindAsync(vnPayIpnResponseDto.vnp_TxnRef);
-                    if (payment != null)
-                    {
-                        // check amount valid
-                        if (payment.RequiredAmount == (vnPayIpnResponseDto.vnp_Amount / 100))
-                        {
-                            // check payment status
-                            if (payment.PaymentStatus != "0")
-                            {
-                                string message = string.Empty;
-                                string status = string.Empty;
-                                if (vnPayIpnResponseDto.vnp_ResponseCode == "00" &&
-                                    vnPayIpnResponseDto.vnp_TransactionStatus == "00")
-                                {
-                                    status = "0";
-                                    message = "Tran success";
-                                }
-                                else
-                                {
-                                    status = "-1";
-                                    message = "Tran error";
-                                }
-
-                                // create payment trans
-                                using (var _transaction = _context.Database.BeginTransaction())
-                                {
-                                    try
-                                    {
-                                        var paymentTransDto = new CreatePaymentTransDto()
-                                        {
-                                            PaymentId = vnPayIpnResponseDto.vnp_TxnRef!.Value,
-                                            TranMessage = message,
-                                            TranDate = DateTime.Now,
-                                            TranPayload = JsonConvert.SerializeObject(vnPayIpnResponseDto),
-                                            TranStatus = status,
-                                            TranAmount = vnPayIpnResponseDto.vnp_Amount / 100
-                                        };
-
-                                        var paymentTrans = paymentTransDto.Adapt<PaymentTransaction>();
-                                        _context.PaymentTransactions.Add(paymentTrans);
-                                        await _context.SaveChangesAsync();
-
-                                        // update payment
-                                        payment.PaymentLastMessage = paymentTrans.TranMessage;
-                                        payment.PaidAmount = _context.PaymentTransactions
-                                            .Where(pt => pt.PaymentId == payment.Id && pt.TranStatus == "0")
-                                            .Sum(pt => pt.TranAmount);
-                                        payment.PaymentStatus = paymentTrans.TranStatus;
-                                        payment.LastUpdateAt = DateTime.Now;
-                                        payment.LastUpdateBy = (await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!))!.Id;
-
-                                        _context.Entry<Payment>(payment).State = EntityState.Modified;
-
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        resultData.Set("99", $"{ex.Message}");
-                                        _transaction.Rollback();
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                resultData.Set("02", "Order already confirmed");
-                            }
-                        }
-                        else
-                        {
-                            resultData.Set("04", "Invalid amount");
-                        }
-                    }
-                    else
-                    {
-                        resultData.Set("01", "Order not found");
-                    }
-
-                }
-                else
-                {
-                    resultData.Set("97", "Invalid Signature");
-                }
-            }
-            catch (Exception ex)
-            {
-                // TODO: process when exception
-                resultData.Set("99", $"Input required data - {ex.Message}");
-            }
-
-            result.Data = vnPayIpnResponseDto;
-            result.Success = resultData.RspCode == "00";
-
-            return result;
         }
 
         /// <summary>
@@ -582,9 +444,7 @@ namespace serverapi.Controllers
                     Data = responseString
                 }); // Return the response string or a parsed object
             }
-
             return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){"Failed to refund transaction"}});
-
         }
 
         private string ComputeVnpSecureHash(Dictionary<string, string> parameters, string secretKey)

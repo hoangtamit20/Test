@@ -163,6 +163,9 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 // add sendmail service
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
+// add signalR
+builder.Services.AddSignalR();
+
 
 var app = builder.Build();
 
@@ -177,6 +180,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 
+app.UseRouting();
+
 app.UseAuthorization();
 
 app.UseCors(options =>
@@ -185,6 +190,8 @@ app.UseCors(options =>
 });
 
 app.MapControllers();
+
+app.MapHub<NotificationHub>("/notificationhub");
 
 // app.MapHub<NotificationHub>("/notificationHub");
 
