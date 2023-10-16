@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace serverapi.Dtos.Payments
@@ -32,11 +33,13 @@ namespace serverapi.Dtos.Payments
         /// <summary>
         /// 
         /// </summary>
+        [JsonIgnore]
         public DateTime? PaymentDate { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// 
         /// </summary>
+        [JsonIgnore]
         public DateTime? ExpireDate { get; set; } = DateTime.Now.AddMinutes(50);
 
         /// <summary>
@@ -47,7 +50,8 @@ namespace serverapi.Dtos.Payments
         /// <summary>
         /// 
         /// </summary>
-        public int MerchantId { get; set; }
+        [JsonIgnore]
+        public int? MerchantId { get; set; }
 
         /// <summary>
         /// 
@@ -59,9 +63,9 @@ namespace serverapi.Dtos.Payments
         /// </summary>
         public int OrderId { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public string SignValue { get; set; } = null!;
+        // /// <summary>
+        // /// 
+        // /// </summary>
+        // public string SignValue { get; set; } = null!;
     }
 }

@@ -77,9 +77,6 @@ builder.Services.AddDbContextFactory<PetShopDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-// add service jwt
-builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
-
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -124,7 +121,8 @@ builder.Services.AddIdentityCore<AppUser>()
                 .AddEntityFrameworkStores<PetShopDbContext>()
                 .AddDefaultTokenProviders(); // -> to generate token
                 
-
+// add service jwt
+builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
 
 // add service
 builder.Services.AddHttpClient();

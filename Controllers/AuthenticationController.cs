@@ -317,9 +317,9 @@ namespace PetShop.Controllers
                     Data = Uri.UnescapeDataString(token)
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){$"{ex.Message}"}});
+                return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"{ex.Message}" } });
             }
         }
 
@@ -353,6 +353,45 @@ namespace PetShop.Controllers
                 return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"User Id : {resetPasswordConfirmRequestDto.UserId} not exists" } });
             }
             return BadRequest(new BaseBadRequestResult() { Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList() });
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost("/register-admin-account")]
+        public async Task<IActionResult> CreateAdmin([FromBody] NguoiDungRegisterModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var userExists = await _userManager.FindByEmailAsync(model.Email!);
+                if (userExists != null)
+                    return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User already exists!" });
+
+                AppUser user = new AppUser()
+                {
+                    Email = model.Email,
+                    Name = model.Name!,
+                    UserName = model.Email,
+                    CreateDate = DateTime.Now
+                };
+                if (!user.EmailConfirmed)
+                {
+                    user.EmailConfirmed = true;
+                }
+                var result = await _userManager.CreateAsync(user, model.Password!);
+                if (!result.Succeeded)
+                    return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+
+                if (!await _roleManager.RoleExistsAsync("Admin"))
+                    await _roleManager.CreateAsync(new IdentityRole("Admin"));
+                if (await _roleManager.RoleExistsAsync("Admin"))
+                    await _userManager.AddToRoleAsync(user, "Admin");
+                return Ok(new { Status = "Success", Message = "User created successfully!" });
+            }
+            return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { "" } });
         }
 
 
