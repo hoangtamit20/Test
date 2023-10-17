@@ -39,7 +39,7 @@ namespace serverapi.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly UserManager<AppUser> _userManager;
         private readonly MomoConfig _momoConfig;
-        private readonly IHubContext<NotificationHub> _hubContext;
+        // private readonly IHubContext<NotificationHub> _hubContext;
 
         /// <summary>
         /// </summary>
@@ -48,17 +48,16 @@ namespace serverapi.Controllers
         /// <param name="vnpayConfig"></param>
         /// <param name="momoConfig"></param>
         /// <param name="httpContextAccessor"></param>
-        /// <param name="hubContext"></param>
 
         public PaymentController(
             PetShopDbContext context,
             IHttpContextAccessor httpContextAccessor,
             IOptions<VnPayConfig> vnpayConfig,
             IOptions<MomoConfig> momoConfig,
-            UserManager<AppUser> userManager,
-            IHubContext<NotificationHub> hubContext)
-        => (_context, _httpContextAccessor, _vnpayConfig, _momoConfig, _userManager, _hubContext)
-        = (context, httpContextAccessor, vnpayConfig.Value, momoConfig.Value, userManager, hubContext);
+            UserManager<AppUser> userManager
+            )
+        => (_context, _httpContextAccessor, _vnpayConfig, _momoConfig, _userManager)
+        = (context, httpContextAccessor, vnpayConfig.Value, momoConfig.Value, userManager);
 
         /// <summary>
         /// Payment order with VnPay, Momo, ZaloPay (Authorize)
@@ -92,8 +91,8 @@ namespace serverapi.Controllers
                         var paymentDest = await _context.PaymentDestinations.FirstOrDefaultAsync(t => t.Id == paymentInfoDto.PaymentDestinationId);
 
                         payment.MerchantId = paymentInfoDto.MerchantId ??
-                            (paymentDest?.DesShortName.ToLower() == PaymentMethodConstant.VNPAY.ToLower()
-                            ? 1 : paymentDest?.DesShortName.ToLower() == PaymentMethodConstant.MOMO.ToLower() ? 2 : 3);
+                            (paymentDest?.DesShortName?.ToLower() == PaymentMethodConstant.VNPAY.ToLower()
+                            ? 1 : paymentDest?.DesShortName?.ToLower() == PaymentMethodConstant.MOMO.ToLower() ? 2 : 3);
                         _context.Payments.Add(payment);
                         await _context.SaveChangesAsync();
 
@@ -306,7 +305,7 @@ namespace serverapi.Controllers
         /// <returns></returns>
 
         [HttpGet]
-        [Route("check-payment")]
+        [Route("check-vnpay-payment")]
         public async Task<IActionResult> CheckPayment([FromQuery] VnPayIpnResponseDto vnPayIpnResponseDto)
         {
             try
@@ -411,9 +410,9 @@ namespace serverapi.Controllers
                                         _context.CartItems.RemoveRange(listCartItemRemove);
                                         await _context.SaveChangesAsync();
 
-                                        // send nofti
-                                        string noftiPaymentOrder = $"Đơn hàng #{order.Id} của khách hàng {(await _userManager.FindByIdAsync(order.UserId))?.Name} đã được xác nhận!";
-                                        await _hubContext.Clients.All.SendAsync("ReceiveNotification", noftiPaymentOrder);
+                                        // // send nofti
+                                        // string noftiPaymentOrder = $"Đơn hàng #{order.Id} của khách hàng {(await _userManager.FindByIdAsync(order.UserId))?.Name} đã được xác nhận!";
+                                        // await _hubContext.Clients.All.SendAsync("ReceiveNotification", noftiPaymentOrder);
 
                                         return Ok(new { RspCode = "00", Message = "Transaction success!" });
                                     }

@@ -47,6 +47,10 @@ namespace serverapi.Controllers
         // [HttpPost]
         // public async Task<IActionResult> GetSalestProductOfMonth
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult GetYear()
         {
