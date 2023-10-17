@@ -418,12 +418,7 @@ namespace serverapi.Controllers
                                             _context.CartItems.RemoveRange(listCartItemRemove);
                                             await _context.SaveChangesAsync();
                                         }
-                                        
-
-                                        // // send nofti
-                                        // string noftiPaymentOrder = $"Đơn hàng #{order.Id} của khách hàng {(await _userManager.FindByIdAsync(order.UserId))?.Name} đã được xác nhận!";
-                                        // await _hubContext.Clients.All.SendAsync("ReceiveNotification", noftiPaymentOrder);
-
+                                        _transaction.Commit();
                                         return Ok(new { RspCode = "00", Message = "Confirm Success" });
                                     }
                                     catch (Exception ex)
