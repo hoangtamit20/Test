@@ -63,7 +63,7 @@ namespace PetShop.Controllers
                 .FilterAndPage(
                     listCategories,
                     pagingFilterDto,
-                    category => category.Name!.Contains(pagingFilterDto.Filter!)
+                    category => (category.Name != null && category.Name.Contains(pagingFilterDto.Filter!))
                         || category.Id.ToString().Contains(pagingFilterDto.Filter!),
                     category => category.Name!
                 )

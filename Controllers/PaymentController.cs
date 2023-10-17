@@ -81,6 +81,11 @@ namespace serverapi.Controllers
         {
             if (ModelState.IsValid)
             {
+                var order = await _context.Orders.FirstOrDefaultAsync(od => od.Id == paymentInfoDto.OrderId);
+                if (order is not null && (order.Status == OrderStatus.Confirmed || order.Status == OrderStatus.Success))
+                {
+                    return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){$"The order {paymentInfoDto.OrderId} was paymented"}});
+                }
                 var result = new BaseResultWithData<PaymentLinkDto>();
                 using (var _transaction = await _context.Database.BeginTransactionAsync())
                 {
@@ -256,7 +261,8 @@ namespace serverapi.Controllers
                         returnModel.PaymentStatus = "00";
                         returnModel.PaymentId = payment!.Id;
                         //TODO: Make signature
-                        returnModel.Signature = Guid.NewGuid().ToString();
+                        var paymenSign = (await _context.PaymentSignatures.FirstOrDefaultAsync(p => p.PaymentId == vnPayResponseDto.vnp_TxnRef))?.SignValue;
+                        returnModel.Signature = paymenSign;
                     }
                     else
                     {
@@ -279,6 +285,8 @@ namespace serverapi.Controllers
                 returnUrl = returnUrl.Remove(returnUrl.Length - 1, 1);
             // var a = $"{returnUrl}?{returnModel.ToQueryString()}";
             // System.Console.WriteLine("daiuhdauihd");
+            var a = $"{returnUrl}?{returnModel.ToQueryString()}";
+            System.Console.WriteLine(a);
             return Redirect($"{returnUrl}?{returnModel.ToQueryString()}");
         }
 
@@ -349,7 +357,7 @@ namespace serverapi.Controllers
                                             TranDate = DateTime.Now,
                                             TranPayload = JsonConvert.SerializeObject(vnPayIpnResponseDto),
                                             TranStatus = status,
-                                            TranAmount = vnPayIpnResponseDto.vnp_Amount
+                                            TranAmount = vnPayIpnResponseDto.vnp_Amount / 100
                                         };
 
                                         var paymentTrans = paymentTransDto.Adapt<PaymentTransaction>();
@@ -360,7 +368,7 @@ namespace serverapi.Controllers
                                         payment.PaymentLastMessage = paymentTrans.TranMessage;
                                         payment.PaidAmount = (_context.PaymentTransactions
                                             .Where(pt => pt.PaymentId == payment.Id && pt.TranStatus == "0")
-                                            .Sum(pt => pt.TranAmount)) / 100;
+                                            .Sum(pt => pt.TranAmount));
                                         payment.PaymentStatus = paymentTrans.TranStatus;
                                         payment.LastUpdateAt = DateTime.Now;
 
@@ -402,18 +410,22 @@ namespace serverapi.Controllers
                                                 }
                                             }
                                         }
+                                        var productIds = orderDetailOfCurrentOrder.Select(odd => odd.ProductId).ToList();
                                         var listCartItemRemove = await _context.CartItems
-                                            .Where(cartItem => orderDetailOfCurrentOrder
-                                                .Any(odd => odd.ProductId == cartItem.ProductId))
-                                            .ToListAsync();
-                                        _context.CartItems.RemoveRange(listCartItemRemove);
-                                        await _context.SaveChangesAsync();
+                                                                                .Where(cartItem =>(productIds != null && productIds.Contains(cartItem.ProductId)))
+                                                                                .ToListAsync();
+                                        if (listCartItemRemove is not null)
+                                        {
+                                            _context.CartItems.RemoveRange(listCartItemRemove);
+                                            await _context.SaveChangesAsync();
+                                        }
+                                        
 
                                         // // send nofti
                                         // string noftiPaymentOrder = $"Đơn hàng #{order.Id} của khách hàng {(await _userManager.FindByIdAsync(order.UserId))?.Name} đã được xác nhận!";
                                         // await _hubContext.Clients.All.SendAsync("ReceiveNotification", noftiPaymentOrder);
 
-                                        return Ok(new { RspCode = "00", Message = "Transaction success!" });
+                                        return Ok(new { RspCode = "00", Message = "Confirm Success" });
                                     }
                                     catch (Exception ex)
                                     {
@@ -453,59 +465,59 @@ namespace serverapi.Controllers
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="vnPayRefundDto"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("vnpay-refund")]
-        [ProducesResponseType(typeof(BaseResultWithData<string>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> RefundVnPayTransaction(VnPayRefundDto vnPayRefundDto)
-        {
-            var parameters = new Dictionary<string, string>
-            {
-                {"vnp_Version", _vnpayConfig.Version},
-                {"vnp_Command", "refund"},
-                {"vnp_TmnCode", _vnpayConfig.TmnCode},
-                {"vnp_Amount", (vnPayRefundDto.vnp_Amount * 100).ToString()},
-                {"vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss")},
-                {"vnp_TransactionDate", vnPayRefundDto.vnp_TransactionDate.ToString("yyyyMMddHHmmss")},
-                {"vnp_IpAddr", HttpContext.Connection.RemoteIpAddress!.ToString()},
-                {"vnp_TxnRef", vnPayRefundDto.vnp_TxnRef.ToString()},
-                {"vnp_OrderInfo", vnPayRefundDto.vnp_OrderInfo},
-                // {"vnp_SecureHash", }
-            };
+        // /// <summary>
+        // /// 
+        // /// </summary>
+        // /// <param name="vnPayRefundDto"></param>
+        // /// <returns></returns>
+        // [HttpPost]
+        // [Route("vnpay-refund")]
+        // [ProducesResponseType(typeof(BaseResultWithData<string>), (int)HttpStatusCode.OK)]
+        // public async Task<IActionResult> RefundVnPayTransaction(VnPayRefundDto vnPayRefundDto)
+        // {
+        //     var parameters = new Dictionary<string, string>
+        //     {
+        //         {"vnp_Version", _vnpayConfig.Version},
+        //         {"vnp_Command", "refund"},
+        //         {"vnp_TmnCode", _vnpayConfig.TmnCode},
+        //         {"vnp_Amount", (vnPayRefundDto.vnp_Amount * 100).ToString()},
+        //         {"vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss")},
+        //         {"vnp_TransactionDate", vnPayRefundDto.vnp_TransactionDate.ToString("yyyyMMddHHmmss")},
+        //         {"vnp_IpAddr", HttpContext.Connection.RemoteIpAddress!.ToString()},
+        //         {"vnp_TxnRef", vnPayRefundDto.vnp_TxnRef.ToString()},
+        //         {"vnp_OrderInfo", vnPayRefundDto.vnp_OrderInfo},
+        //         // {"vnp_SecureHash", }
+        //     };
 
-            var vnp_SecureHash = ComputeVnpSecureHash(parameters, _vnpayConfig.HashSecret);
-            parameters.Add("vnp_SecureHash", vnp_SecureHash);
-            parameters.Add("vnp_SecureHashType", "SHA256");
+        //     var vnp_SecureHash = ComputeVnpSecureHash(parameters, _vnpayConfig.HashSecret);
+        //     parameters.Add("vnp_SecureHash", vnp_SecureHash);
+        //     parameters.Add("vnp_SecureHashType", "SHA256");
 
-            using var client = new HttpClient();
-            var content = new FormUrlEncodedContent(parameters);
-            var response = await client.PostAsync(_vnpayConfig.RefundUrl, content);
+        //     using var client = new HttpClient();
+        //     var content = new FormUrlEncodedContent(parameters);
+        //     var response = await client.PostAsync(_vnpayConfig.RefundUrl, content);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var responseString = await response.Content.ReadAsStringAsync();
-                // Parse and handle the response from VNPAY here
-                return Ok(new BaseResultWithData<string>()
-                {
-                    Success = true,
-                    Message = "Refund transaction success!",
-                    Data = responseString
-                }); // Return the response string or a parsed object
-            }
-            return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { "Failed to refund transaction" } });
-        }
+        //     if (response.IsSuccessStatusCode)
+        //     {
+        //         var responseString = await response.Content.ReadAsStringAsync();
+        //         // Parse and handle the response from VNPAY here
+        //         return Ok(new BaseResultWithData<string>()
+        //         {
+        //             Success = true,
+        //             Message = "Refund transaction success!",
+        //             Data = responseString
+        //         }); // Return the response string or a parsed object
+        //     }
+        //     return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { "Failed to refund transaction" } });
+        // }
 
-        private string ComputeVnpSecureHash(Dictionary<string, string> parameters, string secretKey)
-        {
-            var signData = secretKey + string.Join("", parameters.OrderBy(d => d.Key).Select(d => d.Key + "=" + HttpUtility.UrlEncode(d.Value)).ToList());
-            using var sha256 = SHA256.Create();
-            var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(signData));
-            return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
-        }
+        // private string ComputeVnpSecureHash(Dictionary<string, string> parameters, string secretKey)
+        // {
+        //     var signData = secretKey + string.Join("", parameters.OrderBy(d => d.Key).Select(d => d.Key + "=" + HttpUtility.UrlEncode(d.Value)).ToList());
+        //     using var sha256 = SHA256.Create();
+        //     var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(signData));
+        //     return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+        // }
 
         private async Task<string> GetPaymentDestinationShortName(int paymentDesId)
             => (await _context.PaymentDestinations.FindAsync(paymentDesId))!.DesShortName!;
