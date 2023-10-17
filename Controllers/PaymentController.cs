@@ -285,9 +285,8 @@ namespace serverapi.Controllers
                 returnUrl = returnUrl.Remove(returnUrl.Length - 1, 1);
             // var a = $"{returnUrl}?{returnModel.ToQueryString()}";
             // System.Console.WriteLine("daiuhdauihd");
-            var a = $"{returnUrl}?{returnModel.ToQueryString()}";
-            System.Console.WriteLine(a);
-            return Redirect($"{returnUrl}?{returnModel.ToQueryString()}");
+            var redirectUrl = $"{returnUrl}?{returnModel.ToQueryString()}";
+            return Redirect(redirectUrl);
         }
 
         /// <summary>

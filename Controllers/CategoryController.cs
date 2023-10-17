@@ -41,6 +41,7 @@ namespace PetShop.Controllers
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
         public async Task<ActionResult> GetCategories(string? language)
         {
+            int TotalPage = 0;
             PagingFilterDto pagingFilterDto = new PagingFilterDto();
             if (_context.Categories == null || _context.CategoryTranslations == null)
             {
@@ -65,7 +66,8 @@ namespace PetShop.Controllers
                     pagingFilterDto,
                     category => (category.Name != null && category.Name.Contains(pagingFilterDto.Filter!))
                         || category.Id.ToString().Contains(pagingFilterDto.Filter!),
-                    category => category.Name!
+                    category => category.Name,
+                    ref TotalPage
                 )
                 .ToList();
             return Ok(new BaseResultWithData<List<CategoryInfoDto>>()
@@ -92,6 +94,7 @@ namespace PetShop.Controllers
         {
             if (ModelState.IsValid)
             {
+                int TotalPage = 0;
                 if (_context.Categories == null || _context.CategoryTranslations == null)
                 {
                     return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Db Categories is null" } });
@@ -115,7 +118,8 @@ namespace PetShop.Controllers
                         pagingFilterDto,
                         category => category.Name!.Contains(pagingFilterDto.Filter!)
                             || category.Id.ToString().Contains(pagingFilterDto.Filter!),
-                        category => category.Name!
+                        category => category.Name,
+                        ref TotalPage
                     )
                     .ToList();
                 return Ok(new BaseResultWithData<List<CategoryInfoDto>>()

@@ -66,6 +66,7 @@ namespace serverapi.Controllers
         [ProducesResponseType(typeof(BasePagingData<List<ProductInfoDto>>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAllProductDiscount()
         {
+            int TotalPage = 0;
             var pagingFilterDto = new PagingFilterDto();
             var data = await GetListProductDiscountAsync("VN");
             var service = new PagingFilterService<ProductInfoDto>();
@@ -77,13 +78,13 @@ namespace serverapi.Controllers
                     || (product.CategoryName != null && product.CategoryName.ToLower().Contains(pagingFilterDto.Filter!.ToLower()))
                 ),
                 product => product.CategoryId == pagingFilterDto.CategoryId,
-                product => product.Name);
-            var totalPage = (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize);
+                product => product.Name,
+                ref TotalPage);
             return Ok(new BasePagingData<List<ProductInfoDto>>()
             {
                 Success = true,
                 Message = "List Product Discount",
-                TotalPage = totalPage,
+                TotalPage = TotalPage,
                 Data = filteredAndPagedProducts,
             });
         }
@@ -98,6 +99,7 @@ namespace serverapi.Controllers
         [ProducesResponseType(typeof(BasePagingData<List<ProductInfoDto>>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAllProductNoDiscount()
         {
+            int TotalPage = 0;
             var pagingFilterDto = new PagingFilterDto();
             var data = await GetListProductNoDiscountAsync("VN");
             var service = new PagingFilterService<ProductInfoDto>();
@@ -109,13 +111,13 @@ namespace serverapi.Controllers
                     || (product.CategoryName != null && product.CategoryName.ToLower().Contains(pagingFilterDto.Filter!.ToLower()))
                 ),
                 product => product.CategoryId == pagingFilterDto.CategoryId,
-                product => product.Name);
-            var totalPage = (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize);
+                product => product.Name,
+                ref TotalPage);
             return Ok(new BasePagingData<List<ProductInfoDto>>()
             {
                 Success = true,
                 Message = "List Product No Discount",
-                TotalPage = totalPage,
+                TotalPage = TotalPage,
                 Data = filteredAndPagedProducts,
             });
         }
@@ -141,6 +143,8 @@ namespace serverapi.Controllers
 
         public async Task<IActionResult> GetAlls([FromQuery] PagingFilterDto pagingFilterDto)
         {
+            int TotalPage = 0;
+            System.Console.WriteLine(TotalPage);
             pagingFilterDto.LanguageId = pagingFilterDto.LanguageId ?? "VN";
             var data = await GetListProductsAsync(pagingFilterDto.LanguageId);
             if (pagingFilterDto.PageSize == 0 || pagingFilterDto.PageIndex == 0)
@@ -160,13 +164,13 @@ namespace serverapi.Controllers
                     || (product.CategoryName != null && product.CategoryName.ToLower().Contains(pagingFilterDto.Filter!.ToLower()))
                 ),
                 product => product.CategoryId == pagingFilterDto.CategoryId,
-                product => product.Name);
-            var totalPage = (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize);
+                product => product.Name,
+                ref TotalPage);
             return Ok(new BasePagingData<List<ProductInfoDto>>()
             {
                 Success = true,
                 Message = "List Product",
-                TotalPage = totalPage,
+                TotalPage = TotalPage,
                 Data = filteredAndPagedProducts,
             });
         }
