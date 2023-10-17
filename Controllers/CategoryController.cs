@@ -52,7 +52,7 @@ namespace PetShop.Controllers
                 {
                     Id = cl.CategoryId,
                     IsShowHome = cl.Category.IsShowHome,
-                    Name = cl.Name,
+                    Name = cl.Name!,
                     SeoAlias = cl.SeoAlias,
                     SeoDescription = cl.SeoDescription,
                     SeoTitle = cl.SeoTitle
@@ -102,7 +102,7 @@ namespace PetShop.Controllers
                     {
                         Id = cl.CategoryId,
                         IsShowHome = cl.Category.IsShowHome,
-                        Name = cl.Name,
+                        Name = cl.Name!,
                         SeoAlias = cl.SeoAlias,
                         SeoDescription = cl.SeoDescription,
                         SeoTitle = cl.SeoTitle

@@ -16,7 +16,7 @@ namespace serverapi.Dtos.Products
         /// <summary>
         /// 
         /// </summary>
-        public required string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         /// <summary>
         /// 
         /// </summary>
@@ -36,7 +36,7 @@ namespace serverapi.Dtos.Products
         /// <summary>
         /// 
         /// </summary>
-        public string? CategoryName { get; set; }
+        public string CategoryName { get; set; } = string.Empty;
         /// <summary>
         /// 
         /// </summary>

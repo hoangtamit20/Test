@@ -18,8 +18,8 @@ namespace serverapi.Services.PagingAndFilterService
         /// <param name="categoryId"></param>
         /// <returns></returns>
         public List<T> FilterAndPage(
-            List<T> list, 
-            PagingFilterDto pagingFilterDto, 
+            List<T> list,
+            PagingFilterDto pagingFilterDto,
             Func<T, bool> filter,
             Func<T, bool> categoryId,
             Func<T, object> orderBy
@@ -52,8 +52,8 @@ namespace serverapi.Services.PagingAndFilterService
         /// <returns></returns>
 
         public List<T> FilterAndPage(
-            List<T> list, 
-            PagingFilterDto pagingFilterDto, 
+            List<T> list,
+            PagingFilterDto pagingFilterDto,
             Func<T, bool> filter,
             Func<T, object> orderBy
         )
@@ -62,11 +62,18 @@ namespace serverapi.Services.PagingAndFilterService
             {
                 list = list.Where(filter).ToList();
             }
-            list = list.Skip(pagingFilterDto.PageSize * (pagingFilterDto.PageIndex - 1))
-                       .Take(pagingFilterDto.PageSize)
-                       .OrderBy(orderBy)
-                       .ToList();
-
+            if (pagingFilterDto.PageSize == 0)
+            {
+                list = list.OrderBy(orderBy)
+                           .ToList();
+            }
+            else
+            {
+                list = list.Skip(pagingFilterDto.PageSize * (pagingFilterDto.PageIndex - 1))
+                           .Take(pagingFilterDto.PageSize)
+                           .OrderBy(orderBy)
+                           .ToList();
+            }
             return list;
         }
     }

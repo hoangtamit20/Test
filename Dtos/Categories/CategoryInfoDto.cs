@@ -12,7 +12,7 @@ namespace serverapi.Dtos.Categories
         /// <summary>
         /// 
         /// </summary>
-        public string? Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// 

@@ -69,11 +69,12 @@ namespace serverapi.Controllers
             var pagingFilterDto = new PagingFilterDto();
             var data = await GetListProductDiscountAsync("VN");
             var service = new PagingFilterService<ProductInfoDto>();
-            var filteredAndPagedProducts = service.FilterAndPage(data, pagingFilterDto,
+            var filteredAndPagedProducts = service.FilterAndPage(
+                data,
+                pagingFilterDto,
                 product => (
-                    product.Name.Contains(pagingFilterDto.Filter!)
-                    && product.Details!.Contains(pagingFilterDto.Filter!))
-                    || product.CategoryName!.Contains(pagingFilterDto.Filter!
+                    (product.Name != null && product.Name.ToLower().Contains(pagingFilterDto.Filter!.ToLower()))
+                    || (product.CategoryName != null && product.CategoryName.ToLower().Contains(pagingFilterDto.Filter!.ToLower()))
                 ),
                 product => product.CategoryId == pagingFilterDto.CategoryId,
                 product => product.Name);
@@ -100,8 +101,13 @@ namespace serverapi.Controllers
             var pagingFilterDto = new PagingFilterDto();
             var data = await GetListProductNoDiscountAsync("VN");
             var service = new PagingFilterService<ProductInfoDto>();
-            var filteredAndPagedProducts = service.FilterAndPage(data, pagingFilterDto,
-                product => product.Name.Contains(pagingFilterDto.Filter!) || product.CategoryName!.Contains(pagingFilterDto.Filter!),
+            var filteredAndPagedProducts = service.FilterAndPage(
+                data,
+                pagingFilterDto,
+                product => (
+                    (product.Name != null && product.Name.ToLower().Contains(pagingFilterDto.Filter!.ToLower()))
+                    || (product.CategoryName != null && product.CategoryName.ToLower().Contains(pagingFilterDto.Filter!.ToLower()))
+                ),
                 product => product.CategoryId == pagingFilterDto.CategoryId,
                 product => product.Name);
             var totalPage = (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize);
@@ -117,7 +123,6 @@ namespace serverapi.Controllers
         /// <summary>
         /// List info of all product use display home page with choosed language (AllowAnonymous)
         /// </summary>
-        /// <param name="idLanguage">The laguage id want to display</param>
         /// <param name="pagingFilterDto"></param>
         /// <returns></returns>
         /// <remarks>
@@ -134,16 +139,26 @@ namespace serverapi.Controllers
         [Route("/list-product-info-homepage")]
         [ProducesResponseType(typeof(BasePagingData<List<ProductInfoDto>>), (int)HttpStatusCode.OK)]
 
-        public async Task<IActionResult> GetAlls(string? idLanguage, [FromQuery] PagingFilterDto pagingFilterDto)
+        public async Task<IActionResult> GetAlls([FromQuery] PagingFilterDto pagingFilterDto)
         {
-            idLanguage = idLanguage ?? "VN";
-            var data = await GetListProductsAsync(idLanguage);
+            pagingFilterDto.LanguageId = pagingFilterDto.LanguageId ?? "VN";
+            var data = await GetListProductsAsync(pagingFilterDto.LanguageId);
+            if (pagingFilterDto.PageSize == 0 || pagingFilterDto.PageIndex == 0)
+                return Ok(new BasePagingData<List<ProductInfoDto>>()
+                {
+                    Success = true,
+                    Message = "List Product",
+                    TotalPage = 1,
+                    Data = data,
+                });
             var service = new PagingFilterService<ProductInfoDto>();
             var filteredAndPagedProducts = service.FilterAndPage(
                 data,
                 pagingFilterDto,
-                product => product.Name.ToLower().Contains(pagingFilterDto.Filter!.ToLower())
-                    || product.CategoryName!.ToLower().Contains(pagingFilterDto.Filter!.ToLower()),
+                product => (
+                    (product.Name != null && product.Name.ToLower().Contains(pagingFilterDto.Filter!.ToLower()))
+                    || (product.CategoryName != null && product.CategoryName.ToLower().Contains(pagingFilterDto.Filter!.ToLower()))
+                ),
                 product => product.CategoryId == pagingFilterDto.CategoryId,
                 product => product.Name);
             var totalPage = (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)filteredAndPagedProducts.Count / pagingFilterDto.PageSize);
