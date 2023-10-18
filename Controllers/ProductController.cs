@@ -144,7 +144,6 @@ namespace serverapi.Controllers
         public async Task<IActionResult> GetAlls([FromQuery] PagingFilterDto pagingFilterDto)
         {
             int TotalPage = 0;
-            System.Console.WriteLine(TotalPage);
             pagingFilterDto.LanguageId = pagingFilterDto.LanguageId ?? "VN";
             var data = await GetListProductsAsync(pagingFilterDto.LanguageId);
             if (pagingFilterDto.PageSize == 0 || pagingFilterDto.PageIndex == 0)
@@ -193,6 +192,7 @@ namespace serverapi.Controllers
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.InternalServerError)]
         public async Task<ActionResult> GetProductById(int id, string idLanguage)
         {
+            idLanguage = idLanguage ?? "VN";
             if (_dbContext.Products == null)
             {
                 return StatusCode(500, new BaseBadRequestResult() { Errors = new List<string>() { "Internal server error" } });
@@ -525,7 +525,25 @@ namespace serverapi.Controllers
                         Id = pi.Id,
                         ImageUrl = pi.ImagePath
                     }).ToList(),
-                    // ListDiscount = !isDiscount ? null : p.PromotionProducts.Where(pp => pp.Promotion!.FromDate <= currentDate && pp.Promotion.ToDate >= currentDate)
+                    
+                    TotalPriceDiscount = !isDiscount ? 0 : p.PromotionProducts.Where(pp => pp.Promotion!.FromDate <= currentDate && pp.Promotion.ToDate >= currentDate)
+                        .Select(pp => new
+                        {
+                            PriceDisounted = pp.Promotion!.DiscountType == DiscountType.Percent ? ((pp.Promotion.DiscountValue > 1 ? (pp.Promotion.DiscountValue / 100) : pp.Promotion.DiscountValue) * p.Price) : pp.Promotion.DiscountValue
+                        }).Union(
+                        p.Category.PromotionCategories.Where(pc => pc.Promotion!.FromDate <= currentDate && pc.Promotion.ToDate >= currentDate)
+                        .Select(pc => new
+                        {
+                            PriceDisounted = pc.Promotion!.DiscountType == DiscountType.Percent ? ((pc.Promotion.DiscountValue > 1 ? (pc.Promotion.DiscountValue / 100) : pc.Promotion.DiscountValue) * p.Price) : pc.Promotion.DiscountValue
+                        }))
+                        .Sum(l => l.PriceDisounted)
+                })
+                .OrderBy(p => p.Id)
+                .ThenBy(p => p.CategoryId)
+                .ToListAsync();
+        }
+
+        // ListDiscount = !isDiscount ? null : p.PromotionProducts.Where(pp => pp.Promotion!.FromDate <= currentDate && pp.Promotion.ToDate >= currentDate)
                     //     .Select(pp => new PromotionDto
                     //     {
                     //         PromotionId = pp.Promotion!.Id,
@@ -548,21 +566,7 @@ namespace serverapi.Controllers
                     //         PriceDisounted = pc.Promotion.DiscountType == DiscountType.Percent ? ((pc.Promotion.DiscountValue > 1 ? (pc.Promotion.DiscountValue / 100) : pc.Promotion.DiscountValue) * p.Price) : pc.Promotion.DiscountValue
                     //     }))
                     //     .ToList(),
-                    TotalPriceDiscount = !isDiscount ? 0 : p.PromotionProducts.Where(pp => pp.Promotion!.FromDate <= currentDate && pp.Promotion.ToDate >= currentDate)
-                        .Select(pp => new
-                        {
-                            PriceDisounted = pp.Promotion!.DiscountType == DiscountType.Percent ? ((pp.Promotion.DiscountValue > 1 ? (pp.Promotion.DiscountValue / 100) : pp.Promotion.DiscountValue) * p.Price) : pp.Promotion.DiscountValue
-                        }).Union(
-                        p.Category.PromotionCategories.Where(pc => pc.Promotion!.FromDate <= currentDate && pc.Promotion.ToDate >= currentDate)
-                        .Select(pc => new
-                        {
-                            PriceDisounted = pc.Promotion!.DiscountType == DiscountType.Percent ? ((pc.Promotion.DiscountValue > 1 ? (pc.Promotion.DiscountValue / 100) : pc.Promotion.DiscountValue) * p.Price) : pc.Promotion.DiscountValue
-                        }))
-                        .Sum(l => l.PriceDisounted)
-                })
-                .OrderBy(p => p.Id)
-                .ThenBy(p => p.CategoryId)
-                .ToListAsync();
-        }
     }
+
+    
 }

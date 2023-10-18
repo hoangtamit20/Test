@@ -40,11 +40,10 @@ namespace serverapi.Services.PagingAndFilterService
 
             if (pagingFilterDto.CategoryId is not null)
             {
-                list.Where(categoryId);
+                list = list.Where(categoryId).ToList();
             }
 
             TotalPagge = (int)Math.Ceiling((double)list.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)list.Count / pagingFilterDto.PageSize);
-            System.Console.WriteLine(TotalPagge);
 
             list = list.Skip(pagingFilterDto.PageSize * (pagingFilterDto.PageIndex - 1))
                        .Take(pagingFilterDto.PageSize)
@@ -76,7 +75,6 @@ namespace serverapi.Services.PagingAndFilterService
                 list = list.Where(filter).ToList();
             }
             TotalPagge = (int)Math.Ceiling((double)list.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)list.Count / pagingFilterDto.PageSize);
-            System.Console.WriteLine(TotalPagge);
             if (pagingFilterDto.PageSize == 0 || pagingFilterDto.PageIndex == 0)
             {
                 list = list.OrderBy(orderBy)

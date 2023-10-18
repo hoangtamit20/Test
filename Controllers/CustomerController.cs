@@ -82,6 +82,7 @@ namespace serverapi.Controllers
         /// To view detail of all product was order (Authorize)
         /// </summary>
         /// <param name="language">choose language</param>
+        /// <param name="orderId">choose language</param>
         /// <returns></returns>
         [HttpGet]
         [Route("order-detail-of-user")]
@@ -95,6 +96,9 @@ namespace serverapi.Controllers
             {
                 return Unauthorized(new BaseBadRequestResult(){Errors = new List<string>(){$"Cannot found any information of user"}});
             }
+
+            if (await _dbContext.Orders.FirstOrDefaultAsync(od => od.Id == orderId && od.UserId == currentUser.Id) is null)
+                return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){$"The order with id {orderId} of user {currentUser.Name} not found!"}});
 
             var orderDetails = await _dbContext.OrderDetails
                 .Include(odl => odl.Order)
