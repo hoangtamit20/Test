@@ -88,7 +88,7 @@ namespace serverapi.Controllers
                 var order = await _context.Orders.FirstOrDefaultAsync(od => od.Id == paymentInfoDto.OrderId);
                 if (order is not null && (order.Status == OrderStatus.Confirmed || order.Status == OrderStatus.Success))
                 {
-                    return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){$"The order {paymentInfoDto.OrderId} was paymented"}});
+                    return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"The order {paymentInfoDto.OrderId} was paymented" } });
                 }
                 var result = new BaseResultWithData<PaymentLinkDto>();
                 using (var _transaction = await _context.Database.BeginTransactionAsync())
@@ -385,11 +385,24 @@ namespace serverapi.Controllers
                                         _context.Entry<Order>(order).State = EntityState.Modified;
                                         await _context.SaveChangesAsync();
 
+                                        var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == order.UserId);
+                                        if (currentUser is null)
+                                        {
+                                            _transaction.Rollback();
+                                            return BadRequest(new{RspCode = "99", Message = "Tran error"});
+                                        }
+
                                         //remove all product items were payment in customer's cart
-                                        var orderDetailOfCurrentOrder = await _context.OrderDetails.Where(odl => odl.OrderId == order.Id).ToListAsync();
+                                        var orderDetailOfCurrentOrder = await _context.OrderDetails
+                                            .Where(odl => odl.OrderId == order.Id)
+                                            .ToListAsync();
                                         foreach (var odDetail in orderDetailOfCurrentOrder)
                                         {
-                                            var cartItem = await _context.CartItems.FirstOrDefaultAsync(cartItem => cartItem.ProductId == odDetail.ProductId);
+                                            var cartItem = await _context.CartItems
+                                                .Include(c => c.Cart)
+                                                .FirstOrDefaultAsync(cartItem => 
+                                                    cartItem.ProductId == odDetail.ProductId
+                                                    && cartItem.Cart.UserId == currentUser.Id);
                                             if (cartItem is not null)
                                             {
                                                 // check if quantity of product in cart > quantity of order then subst quantity in cart
@@ -400,41 +413,18 @@ namespace serverapi.Controllers
                                                 }
                                                 // remove product in cart
                                                 else
-                                                {
                                                     _context.CartItems.Remove(cartItem);
-                                                }
-                                                try
-                                                {
-                                                    await _context.SaveChangesAsync();
-                                                }
-                                                catch (Exception ex)
-                                                {
-                                                    return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"{ex.Message}" } });
-                                                }
                                             }
                                         }
-                                        var productIds = orderDetailOfCurrentOrder.Select(odd => odd.ProductId).ToList();
-                                        var listCartItemRemove = await _context.CartItems
-                                                                                .Where(cartItem =>(productIds != null && productIds.Contains(cartItem.ProductId)))
-                                                                                .ToListAsync();
-                                        if (listCartItemRemove is not null)
-                                        {
-                                            _context.CartItems.RemoveRange(listCartItemRemove);
-                                            await _context.SaveChangesAsync();
-                                        }
-
+                                        await _context.SaveChangesAsync();
                                         // get order comfirmed info
                                         var orderConfirmed = order.Adapt<OrderConfirmedDto>();
-                                        var user = await _context.Users.FirstOrDefaultAsync(us => us.Id == order.UserId);
-                                        if (user != null)
-                                        {
-                                            orderConfirmed.Name = user.Name;
-                                            orderConfirmed.Email = user.Email!;
-                                        }
+                                        orderConfirmed.Name = currentUser.Name;
+                                        orderConfirmed.Email = currentUser.Email!;
                                         _transaction.Commit();
 
                                         // send message to clien when the order was payment successed;
-                                        await _hubContext.Clients.All.SendAsync(SignalRConstant.ReceiveNotification, 
+                                        await _hubContext.Clients.All.SendAsync(SignalRConstant.ReceiveNotification,
                                             $"Customer {orderConfirmed.Name} was payment order {orderConfirmed.Id} successed!");
                                         await _hubContext.Clients.All.SendAsync(SignalRConstant.ReceiveOrderConfirmed, orderConfirmed);
 
@@ -444,34 +434,34 @@ namespace serverapi.Controllers
                                     catch (Exception ex)
                                     {
                                         _transaction.Rollback();
-                                        return Ok(new { RspCode = "99", Message = $"{ex.Message}" });
+                                        return BadRequest(new { RspCode = "99", Message = $"{ex.Message}" });
                                     }
                                 }
                             }
                             else
                             {
-                                return Ok(new { RspCode = "02", Message = "Order already confirmed" });
+                                return BadRequest(new { RspCode = "02", Message = "Order already confirmed" });
                             }
                         }
                         else
                         {
-                            return Ok(new { RspCode = "04", Message = "Invalid amount" });
+                            return BadRequest(new { RspCode = "04", Message = "Invalid amount" });
                         }
                     }
                     else
                     {
-                        return Ok(new { RspCode = "01", Message = "Order not found" });
+                        return BadRequest(new { RspCode = "01", Message = "Order not found" });
                     }
                 }
                 else
                 {
-                    return Ok(new { RspCode = "97", Message = "Invalid Signature" });
+                    return BadRequest(new { RspCode = "97", Message = "Invalid Signature" });
                 }
             }
             catch (Exception ex)
             {
                 // TODO: process when exception
-                return Ok(new
+                return BadRequest(new
                 {
                     RspCode = "99",
                     Message = $"Input required data - {ex.Message}"
