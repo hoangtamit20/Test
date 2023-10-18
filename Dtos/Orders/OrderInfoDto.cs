@@ -1,3 +1,5 @@
+using serverapi.Enum;
+
 namespace serverapi.Dtos.Orders
 {
     /// <summary>
@@ -34,6 +36,11 @@ namespace serverapi.Dtos.Orders
         /// 
         /// </summary>
         public string ShipPhoneNumber { get; set; } = null!;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public OrderStatus OrderStatus { get; set; }
 
         /// <summary>
         /// 

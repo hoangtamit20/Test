@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PetShop.Data;
+using serverapi.Base;
 using serverapi.Dtos.Statisticals;
 using serverapi.Enum;
 
@@ -10,6 +13,7 @@ namespace serverapi.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
+    // [Authorize(Roles = "Admin")]
     public class StatisticalController : ControllerBase
     {
         private readonly PetShopDbContext _context;
@@ -22,6 +26,8 @@ namespace serverapi.Controllers
         {
             _context = context;
         }
+
+        
 
 
         // [HttpGet]
@@ -70,6 +76,51 @@ namespace serverapi.Controllers
             listResult.AddRange(list);
             return Ok(listResult);
         }
+
+        /// <summary>
+        /// Get total price 
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("total-price-saled-in-day")]
+        public async Task<IActionResult> TotalPriceSaledInDay()
+        {
+            if (_context.Orders is null)
+                return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){$"Db Orders is null!"}});
+            var currentDate = DateTime.Now;
+            var totalPriceInday = await _context.Orders
+                .Where(od => od.OrderDate.Date == currentDate.Date)
+                .SumAsync(od => od.TotalPrice);
+            return Ok(new BaseResultWithData<decimal>(){
+                Success = true,
+                Message = $"Total price saled in {currentDate}.",
+                Data = totalPriceInday
+            });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("total-price-saled-in-day")]
+        public async Task<IActionResult> TotalPriceSaledInDay(DateTime date)
+        {
+            if (_context.Orders is null)
+                return BadRequest(new BaseBadRequestResult(){Errors = new List<string>(){$"Db Orders is null!"}});
+            var totalPriceInday = await _context.Orders
+                .Where(od => od.OrderDate.Date == date.Date)
+                .SumAsync(od => od.TotalPrice);
+            return Ok(new BaseResultWithData<decimal>(){
+                Success = true,
+                Message = $"Total price saled in {date}.",
+                Data = totalPriceInday
+            });
+        }
+
+
+
 
     }
 }

@@ -189,7 +189,7 @@ app.UseCors(options =>
 
 app.MapControllers();
 
-// app.MapHub<NotificationHub>("/notificationhub");
+app.MapHub<NotificationHub>("/notificationHub");
 
 // app.MapHub<NotificationHub>("/notificationHub");
 

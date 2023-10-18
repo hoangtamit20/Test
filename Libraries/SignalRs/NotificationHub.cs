@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
+using serverapi.Constants;
+using serverapi.Dtos.Orders;
 
 namespace serverapi.Libraries.SignalRs
 {
@@ -15,7 +17,17 @@ namespace serverapi.Libraries.SignalRs
         /// <returns></returns>
         public async Task SendNotification(string message)
         {
-            await Clients.All.SendAsync("ReceiveNotification", message);
+            await Clients.All.SendAsync(SignalRConstant.ReceiveNotification, message);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="orderConfirmedDto"></param>
+        /// <returns></returns>
+        public async Task SendOrderConfirmed(OrderConfirmedDto orderConfirmedDto)
+        {
+            await Clients.All.SendAsync(SignalRConstant.ReceiveOrderConfirmed, orderConfirmedDto);
         }
     }
 }

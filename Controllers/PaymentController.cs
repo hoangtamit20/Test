@@ -17,12 +17,14 @@ using serverapi.Configurations;
 using serverapi.Constants;
 using serverapi.Dtos;
 using serverapi.Dtos.Merchants;
+using serverapi.Dtos.Orders;
 using serverapi.Dtos.Payments;
 using serverapi.Dtos.Payments.Momo;
 using serverapi.Dtos.Payments.VnPay;
 using serverapi.Entity;
 using serverapi.Enum;
 using serverapi.Helpers;
+using serverapi.Libraries.SignalRs;
 
 namespace serverapi.Controllers
 {
@@ -38,7 +40,7 @@ namespace serverapi.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly UserManager<AppUser> _userManager;
         private readonly MomoConfig _momoConfig;
-        // private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
         /// <summary>
         /// </summary>
@@ -46,6 +48,7 @@ namespace serverapi.Controllers
         /// <param name="userManager"></param>
         /// <param name="vnpayConfig"></param>
         /// <param name="momoConfig"></param>
+        /// <param name="hubContext"></param>
         /// <param name="httpContextAccessor"></param>
 
         public PaymentController(
@@ -53,10 +56,11 @@ namespace serverapi.Controllers
             IHttpContextAccessor httpContextAccessor,
             IOptions<VnPayConfig> vnpayConfig,
             IOptions<MomoConfig> momoConfig,
-            UserManager<AppUser> userManager
+            UserManager<AppUser> userManager,
+            IHubContext<NotificationHub> hubContext
             )
-        => (_context, _httpContextAccessor, _vnpayConfig, _momoConfig, _userManager)
-        = (context, httpContextAccessor, vnpayConfig.Value, momoConfig.Value, userManager);
+        => (_context, _httpContextAccessor, _vnpayConfig, _momoConfig, _userManager, _hubContext)
+        = (context, httpContextAccessor, vnpayConfig.Value, momoConfig.Value, userManager, hubContext);
 
         /// <summary>
         /// Payment order with VnPay, Momo, ZaloPay (Authorize)
@@ -418,7 +422,23 @@ namespace serverapi.Controllers
                                             _context.CartItems.RemoveRange(listCartItemRemove);
                                             await _context.SaveChangesAsync();
                                         }
+
+                                        // get order comfirmed info
+                                        var orderConfirmed = order.Adapt<OrderConfirmedDto>();
+                                        var user = await _context.Users.FirstOrDefaultAsync(us => us.Id == order.UserId);
+                                        if (user != null)
+                                        {
+                                            orderConfirmed.Name = user.Name;
+                                            orderConfirmed.Email = user.Email!;
+                                        }
                                         _transaction.Commit();
+
+                                        // send message to clien when the order was payment successed;
+                                        await _hubContext.Clients.All.SendAsync(SignalRConstant.ReceiveNotification, 
+                                            $"Customer {orderConfirmed.Name} was payment order {orderConfirmed.Id} successed!");
+                                        await _hubContext.Clients.All.SendAsync(SignalRConstant.ReceiveOrderConfirmed, orderConfirmed);
+
+                                        // return for VnPay
                                         return Ok(new { RspCode = "00", Message = "Confirm Success" });
                                     }
                                     catch (Exception ex)

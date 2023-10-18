@@ -87,7 +87,7 @@ namespace serverapi.Controllers
         [Route("order-detail-of-user")]
         [Authorize]
         [ProducesResponseType(typeof(BaseResultWithData<List<OrderDetailHistoryDto>>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> SeeOrderDetail(string language)
+        public async Task<IActionResult> SeeOrderDetail(string language, int orderId)
         {
             language = language ?? "VN";
             var currentUser = await _userManager.GetUserAsync(User);
@@ -100,7 +100,7 @@ namespace serverapi.Controllers
                 .Include(odl => odl.Order)
                 .Include(odl => odl.Product)
                 .ThenInclude(p => p.ProductTranslations)
-                .Where(odt => odt.Order.UserId == currentUser.Id)
+                .Where(odt => odt.Order.UserId == currentUser.Id && odt.OrderId == orderId)
                 .Select(odl => new OrderDetailHistoryDto{
                     ProductName = odl.Product.ProductTranslations
                         .FirstOrDefault(pt => 

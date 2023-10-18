@@ -4,7 +4,6 @@ using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PetShop.Data;
@@ -12,7 +11,6 @@ using serverapi.Base;
 using serverapi.Dtos.Orders;
 using serverapi.Entity;
 using serverapi.Enum;
-using serverapi.Libraries.SignalRs;
 
 namespace PetShop.Controllers
 {
@@ -151,11 +149,6 @@ namespace PetShop.Controllers
                 {
                     return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"There are no products to place an order" } });
                 }
-                var listError = checkValidQuantityOfProductOrder(createOrderDto.ListProductOrder);
-                if (listError.Count > 0)
-                {
-                    return BadRequest(new BaseBadRequestResult() { Errors = listError });
-                }
                 if (_context.Orders == null)
                 {
                     return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Db 'Order' is null!" } });
@@ -165,6 +158,12 @@ namespace PetShop.Controllers
                 {
                     try
                     {
+                        var listError = checkValidQuantityOfProductOrder(createOrderDto.ListProductOrder);
+                        if (listError.Count > 0)
+                        {
+                            return BadRequest(new BaseBadRequestResult() { Errors = listError });
+                        }
+
                         // process create order
                         var order = createOrderDto.Adapt<Order>();
                         var currentUser = await _userManager.GetUserAsync(User);
@@ -175,10 +174,10 @@ namespace PetShop.Controllers
                         }
                         else
                         {
-                                order.UserId = currentUser.Id;
-                                _context.Orders.Add(order);
-                                order.Status = OrderStatus.InProgress;
-                                await _context.SaveChangesAsync();
+                            order.UserId = currentUser.Id;
+                            _context.Orders.Add(order);
+                            order.Status = OrderStatus.InProgress;
+                            await _context.SaveChangesAsync();
                         }
                         // add product to order details
                         var listOrderDetail = createOrderDto.ListProductOrder.Adapt<List<OrderDetail>>();
@@ -192,13 +191,18 @@ namespace PetShop.Controllers
                                 listError.Add($"Product with Id : {orderDetail.ProductId} does not exists");
                                 continue;
                             }
-                            // check product has apply discount
+                            
+                            // substrack stock of product
+                            product.Stock -= orderDetail.Quantity;
+                            _context.Entry<Product>(product).State = EntityState.Modified;
 
+                            // check product has apply discount
                             var price = product.Price - (await GetPriceProductOrder(product));
                             orderDetail.OrderId = order.Id;
                             totalPrice += price * orderDetail.Quantity;
                             orderDetail.SubTotal = price * orderDetail.Quantity;
                         }
+
                         order.TotalPrice = totalPrice;
                         _context.Entry<Order>(order).State = EntityState.Modified;
                         await _context.OrderDetails.AddRangeAsync(listOrderDetail);
@@ -219,8 +223,9 @@ namespace PetShop.Controllers
                     }
                 }
             }
-            return BadRequest(new BaseBadRequestResult(){Errors = ModelState.SelectMany(x => x.Value!.Errors.Select(p => p.ErrorMessage)).ToList()});
+            return BadRequest(new BaseBadRequestResult() { Errors = ModelState.SelectMany(x => x.Value!.Errors.Select(p => p.ErrorMessage)).ToList() });
         }
+
 
         /// <summary>
         /// Set status for order by id (Admin)
@@ -256,6 +261,48 @@ namespace PetShop.Controllers
                 return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Invalid status value" } });
             }
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("list-order-confirmed")]
+        [ProducesResponseType(typeof(BaseResultWithData<List<OrderConfirmedDto>>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> GetListOrderConfirmed()
+        {
+            if (_context.Orders is null || _context.Users is null)
+            {
+                return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Db Orders or Users is null!" } });
+            }
+            var orders = await _context.Orders
+                .Include(od => od.User)
+                .Where(od => od.Status == OrderStatus.Confirmed)
+                .Select(od => new OrderConfirmedDto()
+                {
+                    Id = od.Id,
+                    OrderDate = od.OrderDate,
+                    OrderStatus = od.Status,
+                    ShipAddress = od.ShipAddress,
+                    ShipEmail = od.ShipEmail,
+                    ShipName = od.ShipName,
+                    ShipPhoneNumber = od.ShipPhoneNumber,
+                    TotalPrice = od.TotalPrice,
+                    UserId = od.UserId,
+                    Name = od.User.Name,
+                    Email = od.User.Email!
+                })
+                .ToListAsync();
+            return Ok(new BaseResultWithData<List<OrderConfirmedDto>>()
+            {
+                Success = true,
+                Message = "List orders were confirmed",
+                Data = orders
+            });
+        }
+
 
         private bool OrderExists(int id)
         {
