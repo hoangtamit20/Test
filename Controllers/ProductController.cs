@@ -292,7 +292,7 @@ namespace serverapi.Controllers
         /// Api update Product and ProductTranslation (ADMIN)
         /// </summary>
         /// <param name="updateProductDto"></param>
-        /// <param name="id"></param>
+        /// <param name="id">Product Id</param>
         /// <returns></returns>
         /// <remarks>
         ///     PUT :
@@ -354,7 +354,7 @@ namespace serverapi.Controllers
         /// <summary>
         /// Delete Product by Id (Admin)
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">Product Id</param>
         /// <returns></returns>
 
         [HttpDelete("{id}")]
@@ -436,19 +436,6 @@ namespace serverapi.Controllers
             });
         }
 
-        // [HttpGet]
-        // [Route("list-product-best-view")]
-        // [AllowAnonymous]
-        // public async Task<IActionResult> Top10ProductBestSales(string language)
-        // {
-        //     return Ok(new BaseResultWithData<List<ProductInfoDto>>()
-        //     {
-        //         Success = true,
-        //         Message = $"Top 10 product best sales",
-        //         Data = GetListProductIsDiscountAsync(language ?? "VN").Where(p => p.)
-        //     });
-        // }
-
         private async Task<List<ProductInfoDto>> GetListProductNoDiscountAsync(string? language)
             => await GetListProductIsDiscountAsync(language, false, DateTime.Now);
 
@@ -462,14 +449,6 @@ namespace serverapi.Controllers
             a.AddRange(b);
             return a;
         }
-
-        // private IQueryable<Product> QueryableProductForStatistical(string language)
-        // {
-        //     return _dbContext.Products
-        //             .Include(p => p.ProductTranslations)
-        //             .Include(p => p.OrderDetails).ThenInclude(ord => ord.Order)
-        //             .Where(p => p.);
-        // }
 
         private IQueryable<Product> QueryableProductAsync(string language, bool isDiscount, DateTime currentDate)
         {

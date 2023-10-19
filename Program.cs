@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 using FluentValidation;
@@ -120,7 +121,7 @@ builder.Services.AddIdentityCore<AppUser>()
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<PetShopDbContext>()
                 .AddDefaultTokenProviders(); // -> to generate token
-                
+
 // add service jwt
 builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
 
@@ -144,10 +145,10 @@ builder.Services.AddScoped<IValidator<Product>, ProductValidator>();
 builder.Services.AddHttpContextAccessor();
 
 // add payment method service
-    //vnpay service
+//vnpay service
 builder.Services.Configure<VnPayConfig>(
     builder.Configuration.GetSection(VnPayConfig.ConfigName));
-    // momo service
+// momo service
 builder.Services.Configure<MomoConfig>(
     builder.Configuration.GetSection(MomoConfig.ConfigName));
 

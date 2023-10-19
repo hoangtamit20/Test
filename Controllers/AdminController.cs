@@ -60,7 +60,7 @@ namespace serverapi.Controllers
         /// <param name="orderId"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("accept-order/{id}")]
+        [Route("accept-order/{orderId}")]
         public async Task<IActionResult> AcceptOrderOfCustomer(int orderId)
         {
             if (_context.Orders is null)
@@ -68,7 +68,9 @@ namespace serverapi.Controllers
             var orderExists = await _context.Orders.FindAsync(orderId);
             if (orderExists is null)
                 return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Cannot found order {orderId}" } });
-
+            if (orderExists.Status != OrderStatus.Confirmed)
+                return BadRequest(new BaseBadRequestResult()
+                    {Errors = new List<string>(){$"Cannot accept order with id {orderId} because the order maybe was payment or not yet payment"}});
             using (var _transaction = await _context.Database.BeginTransactionAsync())
             {
                 // change order status
@@ -94,7 +96,7 @@ namespace serverapi.Controllers
         /// <param name="orderId"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("cancel-order/{id}")]
+        [Route("cancel-order/{orderId}")]
         public async Task<IActionResult> CancelOrderOfCustomer(int orderId)
         {
             if (_context.Orders is null)
@@ -102,6 +104,9 @@ namespace serverapi.Controllers
             var orderExists = await _context.Orders.FindAsync(orderId);
             if (orderExists is null)
                 return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Cannot found order {orderId}" } });
+            if (orderExists.Status == OrderStatus.Success)
+                return BadRequest(new BaseBadRequestResult()
+                    {Errors = new List<string>(){$"Cannot cancel order with id {orderId} because the order was shipped."}});
             using (var _transaction = await _context.Database.BeginTransactionAsync())
             {
                 //update order status
