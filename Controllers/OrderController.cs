@@ -4,13 +4,16 @@ using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PetShop.Data;
 using serverapi.Base;
+using serverapi.Constants;
 using serverapi.Dtos.Orders;
 using serverapi.Entity;
 using serverapi.Enum;
+using serverapi.Libraries.SignalRs;
 
 namespace PetShop.Controllers
 {
@@ -23,16 +26,22 @@ namespace PetShop.Controllers
     {
         private readonly PetShopDbContext _context;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="context"></param>
         /// <param name="userManager"></param>
-        public OrderController(PetShopDbContext context, UserManager<AppUser> userManager)
+        /// <param name="hubContext"></param>
+        public OrderController(
+            PetShopDbContext context, 
+            UserManager<AppUser> userManager,
+            IHubContext<NotificationHub> hubContext)
         {
             _context = context;
             _userManager = userManager;
+            _hubContext = hubContext;
         }
 
         // GET: api/Order
@@ -253,6 +262,14 @@ namespace PetShop.Controllers
                 // Lưu thay đổi
                 _context.Entry(orderExists).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
+                if (orderExists.Status == OrderStatus.Confirmed)
+                {
+                    var orderConfirmed = orderExists.Adapt<OrderConfirmedDto>();
+                    var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == orderExists.UserId);
+                    orderConfirmed.Name = currentUser?.Name!;
+                    orderConfirmed.Email = currentUser?.Email!;
+                    await _hubContext.Clients.All.SendAsync(SignalRConstant.ReceiveOrderConfirmed, orderConfirmed);
+                }
 
                 return NoContent();
             }
@@ -284,7 +301,7 @@ namespace PetShop.Controllers
                 {
                     Id = od.Id,
                     OrderDate = od.OrderDate,
-                    OrderStatus = od.Status,
+                    Status = od.Status,
                     ShipAddress = od.ShipAddress,
                     ShipEmail = od.ShipEmail,
                     ShipName = od.ShipName,

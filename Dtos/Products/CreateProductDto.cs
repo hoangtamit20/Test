@@ -23,12 +23,7 @@ namespace serverapi.Dtos.Products
         /// <summary>
         /// 
         /// </summary>
-        public bool? IsFeatured { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string? Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// 
@@ -48,6 +43,21 @@ namespace serverapi.Dtos.Products
         /// <summary>
         /// 
         /// </summary>
+        public string? Thumbnail { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public int CategoryId { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string LanguageId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<string> ImageUrls { get; set; } = new List<string>();
     }
 }

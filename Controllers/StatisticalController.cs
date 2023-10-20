@@ -232,42 +232,46 @@ namespace serverapi.Controllers
         /// The suggestion can be one of the following: "Must add product", "Could apply promotion for this product.", or "Normal".
         /// The response is sorted in ascending order by product name.
         /// </returns>
-        // [HttpGet]
-        // [Route("list-product-with-suggestion")]
-        // public async Task<IActionResult> ProductSuggestionManagement(string language)
-        // {
-        //     language = language ?? "VN";
-        //     var products = await _context.Products
-        //         .Include(p => p.ProductTranslations)
-        //         .Include(p => p.PromotionProducts)
-        //         .ThenInclude(pp => pp.Promotion)
-        //         .AsSplitQuery()
-        //         .ToListAsync();
+        [HttpGet]
+        [Route("list-product-with-suggestion")]
+        public async Task<IActionResult> ProductSuggestionManagement(string language)
+        {
+            language = language ?? "VN";
+            return Ok(new BaseResultWithData<List<ProductItemWithSuggestionDto>>()
+            {
+                Success = true,
+                Message = $"List product for admin",
+                Data = await GetListProductItemWithSuggestionAsync(language)
+            });
+        }
 
-        //     var inventoryItems = products
-        //         .Where(p => p.ProductTranslations.Any(pt => pt.LanguageId == language))
-        //         .Select(g => new ProductItemWithSuggestionDto
-        //         {
-        //             ProductId = g.Id,
-        //             ProductName = g.ProductTranslations.First(pt => pt.LanguageId == language).Name,
-        //             ViewCount = g.ViewCount,
-        //             PromotionName = CheckProductPromotion(g.Id),
-        //             Stock = g.Stock,
-        //             // QuantitySaledInCurrentMonth = GetQuantitySaledInCurrentMonth(g.Id)
-        //             // Suggestion = GetProductSuggestion(g.Stock, g.ViewCount, GetQuantitySaledInCurrentMonth(g.Id))
-        //         })
-        //         .OrderBy(t => t.ProductName)
-        //         .ToList();
-            
-        //     return Ok(new BaseResultWithData<List<ProductItemWithSuggestionDto>>()
-        //     {
-        //         Success = true,
-        //         Message = $"List product for admin",
-        //         Data = inventoryItems
-        //     });
-        // }
+        private async Task<List<ProductItemWithSuggestionDto>> GetListProductItemWithSuggestionAsync(string language)
+        {
+            var products = await _context.Products
+                .Include(p => p.ProductTranslations)
+                .Include(p => p.PromotionProducts)
+                .ThenInclude(pp => pp.Promotion)
+                .AsSplitQuery()
+                .ToListAsync();
 
-        
+            var inventoryItems = products
+                .Where(p => p.ProductTranslations.Any(pt => pt.LanguageId == language))
+                .Select(g => new ProductItemWithSuggestionDto
+                {
+                    ProductId = g.Id,
+                    ProductName = g.ProductTranslations.First(pt => pt.LanguageId == language).Name,
+                    ViewCount = g.ViewCount,
+                    PromotionName = CheckProductPromotion(g.Id),
+                    Stock = g.Stock,
+                    QuantitySaledInCurrentMonth = GetQuantitySaledInCurrentMonth(g.Id),
+                    Suggestion = GetProductSuggestion(g.Stock, g.ViewCount, GetQuantitySaledInCurrentMonth(g.Id))
+                })
+                .OrderBy(t => t.ProductName)
+                .ToList();
+            return inventoryItems;
+        }
+
+
         private string GetProductSuggestion(int stock, int viewCount, int quantitySaledInCurrentMonth)
         {
             if (stock == 0)
@@ -295,20 +299,20 @@ namespace serverapi.Controllers
 
             var b = _context.PromotionProducts
                 .Include(pp => pp.Promotion)
-                .FirstOrDefault(p => 
+                .FirstOrDefault(p =>
                     p.ProductId == productId
                     && p.Promotion != null
                     && p.Promotion.FromDate <= DateTime.Now
                     && p.Promotion.ToDate >= DateTime.Now);
 
-            if (b == null)
-            {
-                throw new Exception("Product not found.");
-            }
+            // if (b == null)
+            // {
+            //     throw new Exception("Product not found.");
+            // }
 
             // var promotion = product.PromotionProducts.FirstOrDefault()?.Promotion;
-            string discountType = b.Promotion is not null ? (b.Promotion.DiscountType == DiscountType.Percent ? "Percent" : "Amount") : "";
-            return b.Promotion != null
+            string discountType = (b is not null && b.Promotion is not null) ? (b.Promotion.DiscountType == DiscountType.Percent ? "Percent" : "Amount") : "";
+            return (b is not null && b.Promotion != null)
                 ? $"Product is on promotion: {b.Promotion.Name}, from {b.Promotion.FromDate} to {b.Promotion.ToDate}, discount type: {discountType}, discount value: {b.Promotion.DiscountValue}"
                 : "No promotion for this product.";
         }

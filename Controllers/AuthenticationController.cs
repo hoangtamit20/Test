@@ -39,7 +39,14 @@ namespace PetShop.Controllers
         /// <param name="configuration"></param>
         /// <param name="googleService"></param>
         /// <param name="emailSender"></param>
-        public AuthenticationController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IGoogleService googleService, IEmailSender emailSender) => (_userManager, _roleManager, _configuration, _googleService, _emailSender) = (userManager, roleManager, configuration, googleService, emailSender);
+        public AuthenticationController(
+            UserManager<AppUser> userManager, 
+            RoleManager<IdentityRole> roleManager, 
+            IConfiguration configuration, 
+            IGoogleService googleService, 
+            IEmailSender emailSender) 
+            => (_userManager, _roleManager, _configuration, _googleService, _emailSender) 
+            = (userManager, roleManager, configuration, googleService, emailSender);
 
 
         /// <summary>

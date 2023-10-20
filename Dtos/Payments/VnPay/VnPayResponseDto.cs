@@ -87,7 +87,8 @@ namespace serverapi.Dtos.Payments.VnPay
             }
             string checkSum = HasHelper.HmacSHA512(secretKey, 
                 data.ToString().Remove(data.Length - 1, 1));
-            return checkSum.Equals(this.vnp_SecureHash, StringComparison.InvariantCultureIgnoreCase);
+            var check = checkSum.Equals(this.vnp_SecureHash, StringComparison.InvariantCultureIgnoreCase);
+            return check;
         }
 
         /// <summary>

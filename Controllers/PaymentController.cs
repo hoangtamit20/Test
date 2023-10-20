@@ -146,7 +146,7 @@ namespace serverapi.Controllers
                                         "other",
                                         paymentInfoDto.PaymentContent,
                                         _vnpayConfig.ReturnUrl,
-                                        payment.Id.ToString()
+                                        payment.Id
                                     );
                                     paymentUrl = vnpayRequest.GetLink(_vnpayConfig.PaymentUrl, _vnpayConfig.HashSecret);
                                     break;
@@ -203,32 +203,6 @@ namespace serverapi.Controllers
             }
             return BadRequest(new BaseBadRequestResult() { Errors = ModelState.SelectMany(x => x.Value!.Errors.Select(p => p.ErrorMessage)).ToList() });
         }
-
-
-
-
-        /// <summary>
-        /// Get payment by id
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("{id}")]
-        [ProducesResponseType(typeof(BaseResultWithData<PaymentDto>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetPaymentById(int id)
-        {
-            var payment = await _context.Payments.FindAsync(id);
-            if (payment is null)
-                return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Payment with Id : {id} not found!" } });
-            return Ok(new BaseResultWithData<PaymentDto>()
-            {
-                Success = true,
-                Message = $"Get payment by id : {id}",
-                Data = payment.Adapt<PaymentDto>()
-            });
-        }
-
 
         /// <summary>
         /// 
@@ -313,6 +287,15 @@ namespace serverapi.Controllers
         /// </summary>
         /// <param name="vnPayIpnResponseDto"></param>
         /// <returns></returns>
+        /// <remarks>
+        ///     GET:
+        /// {
+        ///     9704198526191432198
+        ///     NGUYEN VAN A
+        ///     07/15
+        ///     123456
+        /// }
+        /// </remarks>
 
         [HttpGet]
         [Route("check-vnpay-payment")]
@@ -427,7 +410,7 @@ namespace serverapi.Controllers
                                         await _hubContext.Clients.All.SendAsync(SignalRConstant.ReceiveNotification,
                                             $"Customer {orderConfirmed.Name} was payment order {orderConfirmed.Id} successed!");
                                         await _hubContext.Clients.All.SendAsync(SignalRConstant.ReceiveOrderConfirmed, orderConfirmed);
-
+                                        System.Console.WriteLine("Every thing is OK!");
                                         // return for VnPay
                                         return Ok(new { RspCode = "00", Message = "Confirm Success" });
                                     }

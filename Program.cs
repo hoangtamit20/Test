@@ -1,7 +1,5 @@
-using System.Globalization;
 using System.Reflection;
 using System.Text;
-using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -14,12 +12,8 @@ using PetShop.Data;
 using serverapi.Configurations;
 using serverapi.Entity;
 using serverapi.Libraries.SignalRs;
-using serverapi.Repository.OrderDetailRepository;
-using serverapi.Repository.OrderRepository;
-using serverapi.Repository.PaymentRepository;
 using serverapi.Services;
 using serverapi.Services.Iservice;
-using serverapi.Validator;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -129,13 +123,10 @@ builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfi
 builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<IGoogleService, GoogleService>();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
-builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
 
 
 // add validator service
-builder.Services.AddScoped<IValidator<Product>, ProductValidator>();
+// builder.Services.AddScoped<IValidator<Product>, ProductValidator>();
 
 // add MediatR
 // builder.Services.AddMediatR(options => {
@@ -191,7 +182,5 @@ app.UseCors(options =>
 app.MapControllers();
 
 app.MapHub<NotificationHub>("/notificationHub");
-
-// app.MapHub<NotificationHub>("/notificationHub");
 
 app.Run();

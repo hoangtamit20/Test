@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace serverapi.Dtos.Products
 {
     /// <summary>
@@ -58,12 +52,21 @@ namespace serverapi.Dtos.Products
         /// <summary>
         /// 
         /// </summary>
+        public string? Thumbnail { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int CategoryId { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public int ProductTranslationId { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        [Required]
         public string LanguageId { get; set; } = null!;
     }
 }

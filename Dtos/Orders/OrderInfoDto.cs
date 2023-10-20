@@ -40,7 +40,7 @@ namespace serverapi.Dtos.Orders
         /// <summary>
         /// 
         /// </summary>
-        public OrderStatus OrderStatus { get; set; }
+        public OrderStatus Status { get; set; }
 
         /// <summary>
         /// 

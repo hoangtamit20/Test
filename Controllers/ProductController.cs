@@ -224,199 +224,131 @@ namespace serverapi.Controllers
             }
         }
 
-        /// <summary>
-        /// Api create Product and Product Translation (ADMIN)
-        /// </summary>
-        /// <param name="language"></param>
-        /// <param name="createProductDto"></param>
-        /// <returns></returns>
-        /// <remarks>
-        ///     POST : 
-        /// {
-        ///     "Price": 100.5,
-        ///     "OriginalPrice": 120.0,
-        ///     "Stock": 50,
-        ///     "IsFeatured": true,
-        ///     "Name": "Sản phẩm A",
-        ///     "SeoDescription": "Đây là mô tả SEO cho sản phẩm A",
-        ///     "SeoTitle": "Tiêu đề SEO cho sản phẩm A",
-        ///     "SeoAlias": "seo-alias-san-pham-a"
-        /// }
-        /// </remarks>
-        [HttpPost]
-        [Authorize(Roles = "Admin")]
-        [ProducesResponseType(typeof(BaseResultWithData<CreateProductDto>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> Create(string? language, [FromBody] CreateProductDto createProductDto)
-        {
-            if (ModelState.IsValid)
-            {
-                using (var transaction = _dbContext.Database.BeginTransaction())
-                {
-                    try
-                    {
-                        // create product
-                        //using auto map: CreateProductDto -> Product
-                        var product = createProductDto.Adapt<Product>();
-                        _dbContext.Products.Add(product);
-                        await _dbContext.SaveChangesAsync();
+        // /// <summary>
+        // /// Api create Product and Product Translation (ADMIN)
+        // /// </summary>
+        // /// <param name="language"></param>
+        // /// <param name="createProductDto"></param>
+        // /// <returns></returns>
+        // /// <remarks>
+        // ///     POST : 
+        // /// {
+        // ///     "Price": 100.5,
+        // ///     "OriginalPrice": 120.0,
+        // ///     "Stock": 50,
+        // ///     "IsFeatured": true,
+        // ///     "Name": "Sản phẩm A",
+        // ///     "SeoDescription": "Đây là mô tả SEO cho sản phẩm A",
+        // ///     "SeoTitle": "Tiêu đề SEO cho sản phẩm A",
+        // ///     "SeoAlias": "seo-alias-san-pham-a"
+        // /// }
+        // /// </remarks>
+        // [HttpPost]
+        // [Authorize(Roles = "Admin")]
+        // [ProducesResponseType(typeof(BaseResultWithData<CreateProductDto>), (int)HttpStatusCode.OK)]
+        // [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
+        // public async Task<IActionResult> Create(string? language, [FromBody] CreateProductDto createProductDto)
+        // {
+        //     if (ModelState.IsValid)
+        //     {
+        //         using (var transaction = _dbContext.Database.BeginTransaction())
+        //         {
+        //             try
+        //             {
+        //                 // create product
+        //                 //using auto map: CreateProductDto -> Product
+        //                 var product = createProductDto.Adapt<Product>();
+        //                 _dbContext.Products.Add(product);
+        //                 await _dbContext.SaveChangesAsync();
 
-                        // create product trans
-                        var productTrans = createProductDto.Adapt<ProductTranslation>();
-                        productTrans.ProductId = product.Id;
-                        productTrans.LanguageId = language ?? "VN";
-                        _dbContext.ProductTranslations.Add(productTrans);
-                        await _dbContext.SaveChangesAsync();
-                        // commit trans
-                        transaction.Commit();
-                        return Ok(new BaseResultWithData<CreateProductDto>()
-                        {
-                            Success = true,
-                            Message = "Create product is success!",
-                            Data = createProductDto
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        // This will rollback the transaction if any errors occur.
-                        transaction.Rollback();
-                        return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { ex.Message } });
-                    }
-                }
-            }
-            var errors = ModelState.SelectMany(x => x.Value!.Errors.Select(p => p.ErrorMessage)).ToList();
-            return BadRequest(new BaseBadRequestResult() { Errors = errors });
-        }
+        //                 // create product trans
+        //                 var productTrans = createProductDto.Adapt<ProductTranslation>();
+        //                 productTrans.ProductId = product.Id;
+        //                 productTrans.LanguageId = language ?? "VN";
+        //                 _dbContext.ProductTranslations.Add(productTrans);
+        //                 await _dbContext.SaveChangesAsync();
+        //                 // commit trans
+        //                 transaction.Commit();
+        //                 return Ok(new BaseResultWithData<CreateProductDto>()
+        //                 {
+        //                     Success = true,
+        //                     Message = "Create product is success!",
+        //                     Data = createProductDto
+        //                 });
+        //             }
+        //             catch (Exception ex)
+        //             {
+        //                 // This will rollback the transaction if any errors occur.
+        //                 transaction.Rollback();
+        //                 return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { ex.Message } });
+        //             }
+        //         }
+        //     }
+        //     var errors = ModelState.SelectMany(x => x.Value!.Errors.Select(p => p.ErrorMessage)).ToList();
+        //     return BadRequest(new BaseBadRequestResult() { Errors = errors });
+        // }
 
-        /// <summary>
-        /// Api update Product and ProductTranslation (ADMIN)
-        /// </summary>
-        /// <param name="updateProductDto"></param>
-        /// <param name="id">Product Id</param>
-        /// <returns></returns>
-        /// <remarks>
-        ///     PUT :
-        /// </remarks>
-        [HttpPut("{id}")]
-        [ProducesResponseType(typeof(BaseResultWithData<UpdateProductDto>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateProductDto updateProductDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.SelectMany(x => x.Value!.Errors.Select(p => p.ErrorMessage)).ToList();
-                return BadRequest(new BaseBadRequestResult() { Errors = errors });
-            }
+        // /// <summary>
+        // /// Api update Product and ProductTranslation (ADMIN)
+        // /// </summary>
+        // /// <param name="updateProductDto"></param>
+        // /// <param name="id">Product Id</param>
+        // /// <returns></returns>
+        // /// <remarks>
+        // ///     PUT :
+        // /// </remarks>
+        // [HttpPut("{id}")]
+        // [ProducesResponseType(typeof(BaseResultWithData<UpdateProductDto>), (int)HttpStatusCode.OK)]
+        // [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
+        // [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
+        // [Authorize(Roles = "Admin")]
+        // public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateProductDto updateProductDto)
+        // {
+        //     if (!ModelState.IsValid)
+        //     {
+        //         var errors = ModelState.SelectMany(x => x.Value!.Errors.Select(p => p.ErrorMessage)).ToList();
+        //         return BadRequest(new BaseBadRequestResult() { Errors = errors });
+        //     }
 
-            var product = await _dbContext.Products.FindAsync(id);
-            if (product == null)
-            {
-                return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { "Db Product is null!" } });
-            }
+        //     var product = await _dbContext.Products.FindAsync(id);
+        //     if (product == null)
+        //     {
+        //         return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { "Db Product is null!" } });
+        //     }
 
-            using (var _transaction = await _dbContext.Database.BeginTransactionAsync())
-            {
-                try
-                {
-                    if (id != updateProductDto.Id)
-                        return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"id = {id} gửi về khác với id product = {updateProductDto.Id}" } });
+        //     using (var _transaction = await _dbContext.Database.BeginTransactionAsync())
+        //     {
+        //         try
+        //         {
+        //             if (id != updateProductDto.Id)
+        //                 return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"id = {id} gửi về khác với id product = {updateProductDto.Id}" } });
 
-                    var productUpdate = updateProductDto.Adapt<Product>();
-                    var productTranslationUpdate = updateProductDto.Adapt<ProductTranslation>();
-                    productTranslationUpdate.ProductId = productUpdate.Id;
-                    productTranslationUpdate.LanguageId = updateProductDto.LanguageId;
-                    productTranslationUpdate.Id = updateProductDto.ProductTranslationId;
+        //             var productUpdate = updateProductDto.Adapt<Product>();
+        //             var productTranslationUpdate = updateProductDto.Adapt<ProductTranslation>();
+        //             productTranslationUpdate.ProductId = productUpdate.Id;
+        //             productTranslationUpdate.LanguageId = updateProductDto.LanguageId;
+        //             productTranslationUpdate.Id = updateProductDto.ProductTranslationId;
 
-                    _dbContext.Entry<Product>(productUpdate).State = EntityState.Modified;
-                    _dbContext.Entry<ProductTranslation>(productTranslationUpdate).State = EntityState.Modified;
+        //             _dbContext.Entry<Product>(productUpdate).State = EntityState.Modified;
+        //             _dbContext.Entry<ProductTranslation>(productTranslationUpdate).State = EntityState.Modified;
 
-                    await _dbContext.SaveChangesAsync();
-                    await _transaction.CommitAsync();
+        //             await _dbContext.SaveChangesAsync();
+        //             await _transaction.CommitAsync();
 
-                    return Ok(new BaseResultWithData<UpdateProductDto>()
-                    {
-                        Success = true,
-                        Message = $"Product with Id: {id} was update successed!",
-                        Data = updateProductDto
-                    });
-                }
-                catch (Exception ex)
-                {
-                    await _transaction.RollbackAsync();
-                    return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { ex.Message } });
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// Delete Product by Id (Admin)
-        /// </summary>
-        /// <param name="id">Product Id</param>
-        /// <returns></returns>
-
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> DeleteProduct(int id)
-        {
-            if (_dbContext.Products == null)
-            {
-                return StatusCode(500, new BaseBadRequestResult() { Errors = new List<string>() { "Internal server error" } });
-            }
-            var product = await _dbContext.Products.FindAsync(id);
-            if (product == null)
-            {
-                return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Product with id : {id} not found" } });
-            }
-            try
-            {
-                _dbContext.Products.Remove(product);
-                var productTransRemove = await _dbContext.ProductTranslations.FirstOrDefaultAsync(p => p.ProductId == id);
-                if (productTransRemove is not null)
-                {
-                    _dbContext.ProductTranslations.Remove(productTransRemove);
-                    using (var _transaction = await _dbContext.Database.BeginTransactionAsync())
-                    {
-                        try
-                        {
-                            await _dbContext.SaveChangesAsync();
-                            await _transaction.CommitAsync();
-                            return NoContent();
-                        }
-                        catch (Exception ex)
-                        {
-                            await _transaction.RollbackAsync();
-                            return StatusCode(500, new BaseBadRequestResult()
-                            {
-                                Errors = new List<string>()
-                            {
-                                "An error occurred while performing the transaction",
-                                $"Không nên hiển thị lỗi này cho client - {ex.Message}"
-                            }
-                            });
-                        }
-                    }
-                }
-                await _dbContext.SaveChangesAsync();
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new BaseBadRequestResult()
-                {
-                    Errors = new List<string>()
-                {
-                    "Internal server error",
-                    $"Không nên hiển thị lỗi này cho client - {ex.Message}"
-                }
-                });
-            }
-        }
+        //             return Ok(new BaseResultWithData<UpdateProductDto>()
+        //             {
+        //                 Success = true,
+        //                 Message = $"Product with Id: {id} was update successed!",
+        //                 Data = updateProductDto
+        //             });
+        //         }
+        //         catch (Exception ex)
+        //         {
+        //             await _transaction.RollbackAsync();
+        //             return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { ex.Message } });
+        //         }
+        //     }
+        // }
 
         /// <summary>
         /// Get top 10 product have most view (for slide home page)

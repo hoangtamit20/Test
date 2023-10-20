@@ -30,7 +30,7 @@ namespace serverapi.Dtos.Payments.VnPay
         /// <param name="txnRef"></param>
         public VnPayRequestDto(string version, string tmnCode, DateTime createDate, string ipAddress,
             decimal amount, string currCode, string orderType, string orderInfo,
-            string returnUrl, string txnRef)
+            string returnUrl, int txnRef)
         {
             this.vnp_Locale = "vn";
             this.vnp_IpAddr = ipAddress;
@@ -105,7 +105,7 @@ namespace serverapi.Dtos.Payments.VnPay
             if (vnp_ExpireDate != null)
                 requestData.Add("vnp_ExpireDate", vnp_ExpireDate);
             if (vnp_TxnRef != null)
-                requestData.Add("vnp_TxnRef", vnp_TxnRef);
+                requestData.Add("vnp_TxnRef", vnp_TxnRef.Value.ToString());
             if (vnp_Version != null)
                 requestData.Add("vnp_Version", vnp_Version);
         }
@@ -161,7 +161,7 @@ namespace serverapi.Dtos.Payments.VnPay
         /// <summary>
         /// 
         /// </summary>
-        public string? vnp_TxnRef { get; set; }
+        public int? vnp_TxnRef { get; set; }
         /// <summary>
         /// 
         /// </summary>
