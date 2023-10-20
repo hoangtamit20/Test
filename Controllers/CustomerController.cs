@@ -62,7 +62,7 @@ namespace serverapi.Controllers
                     OrderStatus = od.Status,
                     PaymentDate = od.Payments
                         .FirstOrDefault(payment => 
-                            payment.OrderId == od.Id)!.PaymentDate!.Value,
+                            payment.OrderId == od.Id)!.PaymentDate,
                     MethodPayment = od.Payments
                         .FirstOrDefault(payment => 
                             payment.OrderId == od.Id)!.PaymentDestination.DesShortName!,

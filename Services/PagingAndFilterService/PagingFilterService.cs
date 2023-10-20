@@ -15,14 +15,14 @@ namespace serverapi.Services.PagingAndFilterService
         /// <param name="pagingFilterDto"></param>
         /// <param name="filter"></param>
         /// <param name="orderBy"></param>
-        /// <param name="categoryId"></param>
+        /// <param name="condition"></param>
         /// <param name="TotalPagge"></param>
         /// <returns></returns>
         public List<T> FilterAndPage(
             List<T> list,
             PagingFilterDto pagingFilterDto,
             Func<T, bool> filter,
-            Func<T, bool> categoryId,
+            Func<T, bool> condition,
             Func<T, object> orderBy,
             ref int TotalPagge
         )
@@ -40,7 +40,7 @@ namespace serverapi.Services.PagingAndFilterService
 
             if (pagingFilterDto.CategoryId is not null)
             {
-                list = list.Where(categoryId).ToList();
+                list = list.Where(condition).ToList();
             }
 
             TotalPagge = (int)Math.Ceiling((double)list.Count / pagingFilterDto.PageSize) == 0 ? 1 : (int)Math.Ceiling((double)list.Count / pagingFilterDto.PageSize);

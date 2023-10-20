@@ -44,7 +44,7 @@ public partial class Payment
     /// 
     /// </summary>
     [Column(TypeName = "datetime")]
-    public DateTime? PaymentDate { get; set; } = DateTime.Now;
+    public DateTime PaymentDate { get; set; } = DateTime.Now;
 
     /// <summary>
     /// 

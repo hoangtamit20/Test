@@ -1,12 +1,13 @@
-using System.Globalization;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetShop.Data;
 using serverapi.Base;
+using serverapi.Dtos;
 using serverapi.Dtos.Statisticals;
 using serverapi.Enum;
+using serverapi.Services.PagingAndFilterService;
 
 namespace serverapi.Controllers
 {
@@ -176,6 +177,54 @@ namespace serverapi.Controllers
 
 
         /// <summary>
+        /// This API endpoint returns the revenue for each month of a specified year.
+        /// </summary>
+        /// <param name="year">The year for which the monthly revenue data is required.</param>
+        /// <returns>
+        /// A list of <see cref="RevenueEveryMonthOfYearDto"/> objects, each representing the revenue for a specific month of the year.
+        /// If there are no orders for a particular month, the revenue for that month is returned as 0.
+        /// </returns>
+        /// <response code="200">Returns the monthly revenue data for the specified year.</response>
+        /// <response code="400">If the request is invalid or if the Orders database is null, a list of error messages is returned.</response>
+        [HttpGet]
+        [Route("revenue-every-month-of-year{year}")]
+        [ProducesResponseType(typeof(BaseResultWithData<List<RevenueEveryMonthOfYearDto>>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> RevenueEveryMonthOfTheYear(int year)
+        {
+            if (ModelState.IsValid)
+            {
+                if (_context.Orders is null)
+                    return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Db Orders is null" } });
+                var result = await _context.Orders
+                    .Where(od => od.OrderDate.Year == year && od.Status == OrderStatus.Success)
+                    .GroupBy(od => od.OrderDate.Month)
+                    .Select(od => new RevenueEveryMonthOfYearDto
+                    {
+                        Month = od.Key,
+                        TotalPrice = od.Sum(d => d.TotalPrice)
+                    })
+                    .ToListAsync();
+
+                for (int i = 1; i <= 12; i++)
+                {
+                    if (!result.Any(t => t.Month == i))
+                        result.Add(new RevenueEveryMonthOfYearDto() { Month = i, TotalPrice = 0 });
+                }
+                result = result.OrderBy(t => t.Month).ToList();
+
+                return Ok(new BaseResultWithData<List<RevenueEveryMonthOfYearDto>>()
+                {
+                    Success = true,
+                    Message = $"List revenue every month in year {year}",
+                    Data = result
+                });
+
+            }
+            return BadRequest(new BaseBadRequestResult() { Errors = ModelState.SelectMany(x => x.Value!.Errors.Select(e => e.ErrorMessage)).ToList() });
+        }
+
+        /// <summary>
         /// This API endpoint is used for managing the inventory list.
         /// </summary>
         /// <param name="language">The language parameter is optional and defaults to "VN" if not provided.</param>
@@ -224,7 +273,7 @@ namespace serverapi.Controllers
         /// <summary>
         /// This API endpoint is used for listing products with suggestions for the admin.
         /// </summary>
-        /// <param name="language">The language parameter is optional and defaults to "VN" if not provided.</param>
+        /// <param name="pagingFilterDto">The language parameter is optional and defaults to "VN" if not provided.</param>
         /// <returns>
         /// The API returns a list of products with their information and suggestions. 
         /// Each product in the list includes the product ID, product name, view count, promotion name, stock, quantity saled in current month, and suggestion.
@@ -234,14 +283,26 @@ namespace serverapi.Controllers
         /// </returns>
         [HttpGet]
         [Route("list-product-with-suggestion")]
-        public async Task<IActionResult> ProductSuggestionManagement(string language)
+        public async Task<IActionResult> ProductSuggestionManagement([FromQuery] PagingFilterDto pagingFilterDto)
         {
-            language = language ?? "VN";
-            return Ok(new BaseResultWithData<List<ProductItemWithSuggestionDto>>()
+            pagingFilterDto.LanguageId = pagingFilterDto.LanguageId ?? "VN";
+            var result = await GetListProductItemWithSuggestionAsync(pagingFilterDto.LanguageId);
+            var _pagingFilterService = new PagingFilterService<ProductItemWithSuggestionDto>();
+            int TotalPage = 0;
+            result = _pagingFilterService.FilterAndPage(
+                result,
+                pagingFilterDto,
+                p => p.ProductName.ToLower().Contains(pagingFilterDto.Filter!.ToLower()),
+                p => p.QuantitySaledInCurrentMonth,
+                ref TotalPage
+            );
+
+            return Ok(new BasePagingData<List<ProductItemWithSuggestionDto>>()
             {
+                TotalPage = TotalPage,
                 Success = true,
                 Message = $"List product for admin",
-                Data = await GetListProductItemWithSuggestionAsync(language)
+                Data = result
             });
         }
 
@@ -333,10 +394,6 @@ namespace serverapi.Controllers
 
             return quantitySaledInCurrentMonth;
         }
-
-
-
-
 
     }
 }

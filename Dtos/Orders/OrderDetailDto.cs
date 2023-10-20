@@ -3,15 +3,15 @@ namespace serverapi.Dtos.Orders
     /// <summary>
     /// 
     /// </summary>
-    public class OrderConfirmedDto : OrderInfoDto
+    public class OrderDetailDto : OrderConfirmedDto
     {
         /// <summary>
         /// 
         /// </summary>
-        public string Email { get; set; } = string.Empty;
+        public string MethodPayment { get; set; } = string.Empty;
         /// <summary>
         /// 
         /// </summary>
-        public string Name { get; set; } = string.Empty;
+        public string PaymentTile { get; set; } = string.Empty;
     }
 }

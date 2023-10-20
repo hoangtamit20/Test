@@ -280,47 +280,6 @@ namespace PetShop.Controllers
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("list-order-confirmed")]
-        [ProducesResponseType(typeof(BaseResultWithData<List<OrderConfirmedDto>>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> GetListOrderConfirmed()
-        {
-            if (_context.Orders is null || _context.Users is null)
-            {
-                return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Db Orders or Users is null!" } });
-            }
-            var orders = await _context.Orders
-                .Include(od => od.User)
-                .Where(od => od.Status == OrderStatus.Confirmed)
-                .Select(od => new OrderConfirmedDto()
-                {
-                    Id = od.Id,
-                    OrderDate = od.OrderDate,
-                    Status = od.Status,
-                    ShipAddress = od.ShipAddress,
-                    ShipEmail = od.ShipEmail,
-                    ShipName = od.ShipName,
-                    ShipPhoneNumber = od.ShipPhoneNumber,
-                    TotalPrice = od.TotalPrice,
-                    UserId = od.UserId,
-                    Name = od.User.Name,
-                    Email = od.User.Email!
-                })
-                .ToListAsync();
-            return Ok(new BaseResultWithData<List<OrderConfirmedDto>>()
-            {
-                Success = true,
-                Message = "List orders were confirmed",
-                Data = orders
-            });
-        }
-
-
         private bool OrderExists(int id)
         {
             return (_context.Orders?.Any(e => e.Id == id)).GetValueOrDefault();

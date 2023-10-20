@@ -9,10 +9,16 @@ using Microsoft.EntityFrameworkCore;
 using PetShop.Data;
 using serverapi.Base;
 using serverapi.Constants;
+using serverapi.Dtos;
+using serverapi.Dtos.Customers;
+using serverapi.Dtos.OrderDetails;
+using serverapi.Dtos.Orders;
+using serverapi.Dtos.Payments;
 using serverapi.Dtos.Products;
 using serverapi.Entity;
 using serverapi.Enum;
 using serverapi.Libraries.SignalRs;
+using serverapi.Services.PagingAndFilterService;
 
 namespace serverapi.Controllers
 {
@@ -25,7 +31,6 @@ namespace serverapi.Controllers
     public class AdminController : ControllerBase
     {
         private readonly PetShopDbContext _context;
-        private readonly UserManager<AppUser> _userManager;
         private readonly IEmailSender _emailSender;
         private readonly IHubContext<NotificationHub> _hubContext;
 
@@ -36,17 +41,14 @@ namespace serverapi.Controllers
         /// 
         /// </summary>
         /// <param name="context"></param>
-        /// <param name="userManager"></param>
         /// <param name="hubContext"></param>
         /// <param name="emailSender"></param>
         public AdminController(
             PetShopDbContext context,
-            UserManager<AppUser> userManager,
             IHubContext<NotificationHub> hubContext,
             IEmailSender emailSender)
         {
             _context = context;
-            _userManager = userManager;
             _hubContext = hubContext;
             _emailSender = emailSender;
         }
@@ -228,7 +230,6 @@ namespace serverapi.Controllers
         [Route("update-product-admin/{productId}")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
-
         public async Task<IActionResult> UpdateProduct(int productId, UpdateProductDto updateProductDto)
         {
             if (ModelState.IsValid)
@@ -335,6 +336,231 @@ namespace serverapi.Controllers
                 }
                 });
             }
+        }
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("list-order-confirmed")]
+        [ProducesResponseType(typeof(BaseResultWithData<List<OrderConfirmedDto>>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> GetListOrderConfirmed()
+        {
+            if (_context.Orders is null || _context.Users is null)
+            {
+                return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Db Orders or Users is null!" } });
+            }
+            var orders = await _context.Orders
+                .Include(od => od.User)
+                .Where(od => od.Status == OrderStatus.Confirmed)
+                .Select(od => new OrderConfirmedDto()
+                {
+                    Id = od.Id,
+                    OrderDate = od.OrderDate,
+                    Status = od.Status,
+                    ShipAddress = od.ShipAddress,
+                    ShipEmail = od.ShipEmail,
+                    ShipName = od.ShipName,
+                    ShipPhoneNumber = od.ShipPhoneNumber,
+                    TotalPrice = od.TotalPrice,
+                    Name = od.User.Name,
+                    Email = od.User.Email!
+                })
+                .ToListAsync();
+            return Ok(new BaseResultWithData<List<OrderConfirmedDto>>()
+            {
+                Success = true,
+                Message = "List orders were confirmed",
+                Data = orders
+            });
+        }
+
+        /// <summary>
+        /// This API endpoint retrieves a list of orders with optional filtering and paging.
+        /// </summary>
+        /// <param name="pagingFilterDto">An object containing the paging and filtering options.</param>
+        /// <returns>
+        /// A list of <see cref="OrderInfoAdminDto"/> objects, each representing the details of an order.
+        /// Each object includes the order ID, order date, customer email, customer name, order status, total price, ship name, ship address, ship email, and ship phone number.
+        /// The list is optionally filtered and paged based on the provided <see cref="PagingFilterDto"/>.
+        /// </returns>
+        /// <response code="200">Returns the list of orders.</response>
+        /// <remarks>
+        ///     GET:
+        /// {
+        ///     * Notice : IdCategory is OrderStatus (InProgress : 0; Confirmed = 1; Shipping = 2; Success = 3; Canceled = 4)
+        /// }
+        /// </remarks>
+        [HttpGet]
+        [Route("list-order-admin")]
+        [ProducesResponseType(typeof(BasePagingData<List<OrderInfoAdminDto>>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetOrdersWithFilterAndPaging([FromQuery] PagingFilterDto pagingFilterDto)
+        {
+            var listOrders = await _context.Orders
+                .Include(o => o.User)
+                .Select(o => new OrderInfoAdminDto
+                {
+                    OrderId = o.Id,
+                    OrderDate = o.OrderDate,
+                    CustomerEmail = o.User.Email,
+                    CustomerName = o.User.Name,
+                    OrderStatus = o.Status,
+                    TotalPrice = o.TotalPrice,
+                    ShipName = o.ShipName,
+                    ShipAddress = o.ShipAddress,
+                    ShipEmail = o.ShipEmail,
+                    ShipPhoneNumber = o.ShipPhoneNumber
+                })
+                .ToListAsync();
+            int TotalPage = 0;
+            var _pagingFilterService = new PagingFilterService<OrderInfoAdminDto>();
+            listOrders = _pagingFilterService.FilterAndPage(
+                listOrders,
+                pagingFilterDto,
+                o => o.ToString().Contains(pagingFilterDto.Filter!, StringComparison.OrdinalIgnoreCase),
+                o => (int)o.OrderStatus == pagingFilterDto.CategoryId,
+                o => o.OrderDate,
+                ref TotalPage
+            );
+            return Ok(new BasePagingData<List<OrderInfoAdminDto>>()
+            {
+                TotalPage = TotalPage,
+                Success = true,
+                Message = "Orders for admin",
+                Data = listOrders
+            });
+        }
+
+
+
+        /// <summary>
+        /// This API endpoint retrieves the details of an order by its ID.
+        /// </summary>
+        /// <param name="language">The language in which the product names should be returned. Defaults to "VN" if not provided.</param>
+        /// <param name="orderId">The ID of the order for which details are required.</param>
+        /// <returns>
+        /// A list of <see cref="OrderDetailByOrderIdDto"/> objects, each representing the details of a product in the order.
+        /// Each object includes the product name (in the specified language), quantity, price, and subtotal.
+        /// </returns>
+        /// <response code="200">Returns the order details for the specified order ID.</response>
+        /// <response code="400">If the request is invalid, a list of error messages is returned.</response>
+        [HttpGet]
+        [Route("orderdetails-by-orderid/{orderId}")]
+        [ProducesResponseType(typeof(BaseResultWithData<List<OrderDetailByOrderIdDto>>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> OrderDetailsByOrderId(string language, int orderId)
+        {
+            if (ModelState.IsValid)
+            {
+                language = language ?? "VN";
+                var orderDetails = await _context.OrderDetails
+                    .Include(odl => odl.Product)
+                    .ThenInclude(p => p.ProductTranslations)
+                    .Where(odl => odl.OrderId == orderId)
+                    .Select(odl => new OrderDetailByOrderIdDto
+                    {
+                        ProductName = odl.Product.ProductTranslations.FirstOrDefault(pp => pp.ProductId == odl.ProductId)!.Name,
+                        ProductQuantity = odl.Quantity,
+                        ProductPrice = odl.SubTotal / odl.Quantity,
+                        SubTotal = odl.SubTotal
+                    })
+                    .ToListAsync();
+                return Ok(new BaseResultWithData<List<OrderDetailByOrderIdDto>>()
+                {
+                    Success = true,
+                    Message = $"List Order details by order with {orderId}",
+                    Data = orderDetails
+                });
+            }
+            return BadRequest(new BaseBadRequestResult() { Errors = ModelState.SelectMany(x => x.Value!.Errors.Select(e => e.ErrorMessage)).ToList() });
+        }
+
+        /// <summary>
+        /// This API endpoint retrieves the payment information for an order by its ID.
+        /// </summary>
+        /// <param name="orderId">The ID of the order for which payment information is required.</param>
+        /// <returns>
+        /// A list of <see cref="PaymentInfoByOrderIdDto"/> objects, each representing the payment information for the specified order.
+        /// Each object includes the payment ID, payment content, payment date, payment method, and total amount.
+        /// </returns>
+        /// <response code="200">Returns the payment information for the specified order ID.</response>
+        /// <response code="400">If the request is invalid, a list of error messages is returned.</response>
+        [HttpGet]
+        [Route("payment-info-by-orderid/{orderId}")]
+        public async Task<IActionResult> GetPaymentInfoByOrderId(int orderId)
+        {
+            if (ModelState.IsValid)
+            {
+                var payments = await _context.Payments
+                    .Include(p => p.PaymentDestination)
+                    .Where(p => p.OrderId == orderId)
+                    .Select(p => new PaymentInfoByOrderIdDto
+                    {
+                        PaymentId = p.Id,
+                        PaymentContent = p.PaymentContent,
+                        PaymentDate = p.PaymentDate,
+                        PaymentMethod = p.PaymentDestination.DesShortName ?? string.Empty,
+                        TotalAmount = p.RequiredAmount ?? 0
+                    })
+                    .ToListAsync();
+                return Ok(new BaseResultWithData<List<PaymentInfoByOrderIdDto>>()
+                {
+                    Success = true,
+                    Message = $"Payments by order id {orderId}",
+                    Data = payments
+                });
+            }
+            return BadRequest(new BaseBadRequestResult() { Errors = ModelState.SelectMany(x => x.Value!.Errors.Select(e => e.ErrorMessage)).ToList() });
+        }
+
+        /// <summary>
+        /// This API endpoint retrieves a list of customers with optional filtering and paging.
+        /// </summary>
+        /// <param name="pagingFilterDto">An object containing the paging and filtering options.</param>
+        /// <returns>
+        /// A list of <see cref="CustomerInfoDto"/> objects, each representing the details of a customer.
+        /// Each object includes the user ID, name, image path, creation date, and total number of orders.
+        /// The list is optionally filtered and paged based on the provided <see cref="PagingFilterDto"/>.
+        /// </returns>
+        /// <response code="200">Returns the list of customers.</response>
+        [HttpGet]
+        [Route("list-customer")]
+        [ProducesResponseType(typeof(BasePagingData<List<CustomerInfoDto>>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> CustomerInfos([FromQuery] PagingFilterDto pagingFilterDto)
+        {
+            var customerInfoList = await _context.Users
+                .Join(_context.UserRoles, u => u.Id, ur => ur.UserId, (u, ur) => new { u, ur })
+                .Join(_context.Roles, group => group.ur.RoleId, r => r.Id, (group, r) => new { group, r })
+                .Where(g => g.r.Name!.ToLower() == "user")
+                .Select(g => new CustomerInfoDto
+                {
+                    UserId = g.group.u.Id,
+                    Name = g.group.u.Name,
+                    ImagePath = g.group.u.ImageUrl,
+                    DateCreate = g.group.u.CreateDate,
+                    TotalOrder = _context.Orders.Count(o => o.UserId == g.group.u.Id)
+                })
+                .ToListAsync();
+            int TotalPage = 0;
+            var _pagingFilterService = new PagingFilterService<CustomerInfoDto>();
+            customerInfoList = _pagingFilterService.FilterAndPage(
+                customerInfoList,
+                pagingFilterDto,
+                c => c.Name.ToLower().Contains(pagingFilterDto.Filter!.ToLower()),
+                c => c.TotalOrder,
+                ref TotalPage
+            );
+            return Ok(new BasePagingData<List<CustomerInfoDto>>()
+            {
+                TotalPage = TotalPage,
+                Success = true,
+                Message = $"List customer info",
+                Data = customerInfoList
+            });
         }
     }
 }
