@@ -151,7 +151,7 @@ namespace serverapi.Controllers
             }
             else // if cart is not null then add cart item to cart
             {
-                var cartItemExists = await _context.CartItems.FirstOrDefaultAsync(ct => ct.ProductId == id);
+                var cartItemExists = await _context.CartItems.FirstOrDefaultAsync(ct => ct.ProductId == id && ct.CartId == cart.Id);
                 if (cartItemExists is not null)
                 {
                     cartItemExists.Quantity += 1;
