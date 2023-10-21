@@ -138,11 +138,11 @@ namespace PetShop.Data
                 c.HasIndex(c => c.UserId).IsUnique();
             });
 
-            builder.Entity<ProductTranslation>(pp => 
-            {
-                pp.HasIndex(e => new { e.LanguageId, e.ProductId })
-                .IsUnique();
-            });
+            // builder.Entity<ProductTranslation>(pp => 
+            // {
+            //     pp.HasIndex(e => new { e.LanguageId, e.ProductId })
+            //     .IsUnique();
+            // });
 
             foreach (var entityType in builder.Model.GetEntityTypes())
             {

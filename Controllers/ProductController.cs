@@ -430,14 +430,15 @@ namespace serverapi.Controllers
                     SeoDescription = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.SeoDescription,
                     SeoTitle = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.SeoTitle,
                     SeoAlias = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.SeoAlias,
+                    ProductTranslationId = p.ProductTranslations != null ? 
+                        p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.Id : -1,
                     Thumbnail = p.Thumbnail,
-                    ProductTranslationId = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.Id,
                     ListProductImage = p.ProductImages.Select(pi => new ProductImageDtos
                     {
                         Id = pi.Id,
                         ImageUrl = pi.ImagePath
                     }).ToList(),
-                    
+
                     TotalPriceDiscount = !isDiscount ? 0 : p.PromotionProducts.Where(pp => pp.Promotion!.FromDate <= currentDate && pp.Promotion.ToDate >= currentDate)
                         .Select(pp => new
                         {
@@ -456,29 +457,27 @@ namespace serverapi.Controllers
         }
 
         // ListDiscount = !isDiscount ? null : p.PromotionProducts.Where(pp => pp.Promotion!.FromDate <= currentDate && pp.Promotion.ToDate >= currentDate)
-                    //     .Select(pp => new PromotionDto
-                    //     {
-                    //         PromotionId = pp.Promotion!.Id,
-                    //         PromotionName = pp.Promotion.Name,
-                    //         FromDate = pp.Promotion.FromDate,
-                    //         ToDate = pp.Promotion.ToDate,
-                    //         DiscountType = pp.Promotion.DiscountType,
-                    //         DiscountValue = pp.Promotion.DiscountValue,
-                    //         PriceDisounted = pp.Promotion.DiscountType == DiscountType.Percent ? ((pp.Promotion.DiscountValue > 1 ? (pp.Promotion.DiscountValue / 100) : pp.Promotion.DiscountValue) * p.Price) : pp.Promotion.DiscountValue
-                    //     }).Union(
-                    //     p.Category.PromotionCategories.Where(pc => pc.Promotion!.FromDate <= currentDate && pc.Promotion.ToDate >= currentDate)
-                    //     .Select(pc => new PromotionDto
-                    //     {
-                    //         PromotionId = pc.Promotion!.Id,
-                    //         PromotionName = pc.Promotion.Name,
-                    //         FromDate = pc.Promotion.FromDate,
-                    //         ToDate = pc.Promotion.ToDate,
-                    //         DiscountType = pc.Promotion.DiscountType,
-                    //         DiscountValue = pc.Promotion.DiscountValue,
-                    //         PriceDisounted = pc.Promotion.DiscountType == DiscountType.Percent ? ((pc.Promotion.DiscountValue > 1 ? (pc.Promotion.DiscountValue / 100) : pc.Promotion.DiscountValue) * p.Price) : pc.Promotion.DiscountValue
-                    //     }))
-                    //     .ToList(),
+        //     .Select(pp => new PromotionDto
+        //     {
+        //         PromotionId = pp.Promotion!.Id,
+        //         PromotionName = pp.Promotion.Name,
+        //         FromDate = pp.Promotion.FromDate,
+        //         ToDate = pp.Promotion.ToDate,
+        //         DiscountType = pp.Promotion.DiscountType,
+        //         DiscountValue = pp.Promotion.DiscountValue,
+        //         PriceDisounted = pp.Promotion.DiscountType == DiscountType.Percent ? ((pp.Promotion.DiscountValue > 1 ? (pp.Promotion.DiscountValue / 100) : pp.Promotion.DiscountValue) * p.Price) : pp.Promotion.DiscountValue
+        //     }).Union(
+        //     p.Category.PromotionCategories.Where(pc => pc.Promotion!.FromDate <= currentDate && pc.Promotion.ToDate >= currentDate)
+        //     .Select(pc => new PromotionDto
+        //     {
+        //         PromotionId = pc.Promotion!.Id,
+        //         PromotionName = pc.Promotion.Name,
+        //         FromDate = pc.Promotion.FromDate,
+        //         ToDate = pc.Promotion.ToDate,
+        //         DiscountType = pc.Promotion.DiscountType,
+        //         DiscountValue = pc.Promotion.DiscountValue,
+        //         PriceDisounted = pc.Promotion.DiscountType == DiscountType.Percent ? ((pc.Promotion.DiscountValue > 1 ? (pc.Promotion.DiscountValue / 100) : pc.Promotion.DiscountValue) * p.Price) : pc.Promotion.DiscountValue
+        //     }))
+        //     .ToList(),
     }
-
-    
 }

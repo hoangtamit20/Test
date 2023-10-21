@@ -301,6 +301,7 @@ namespace serverapi.Controllers
         [Route("check-vnpay-payment")]
         public async Task<IActionResult> CheckPayment([FromQuery] VnPayIpnResponseDto vnPayIpnResponseDto)
         {
+            System.Console.WriteLine("VnPay was called this api");
             try
             {
                 // check valid signature
