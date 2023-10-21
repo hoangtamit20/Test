@@ -9,6 +9,11 @@ namespace serverapi.Dtos.OrderDetails
         /// 
         /// </summary>
         public string ProductName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string? ImagePath { get; set; } = string.Empty;
         /// <summary>
         /// 
         /// </summary>

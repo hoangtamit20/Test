@@ -431,6 +431,7 @@ namespace serverapi.Controllers
                     SeoTitle = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.SeoTitle,
                     SeoAlias = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.SeoAlias,
                     Thumbnail = p.Thumbnail,
+                    ProductTranslationId = p.ProductTranslations.FirstOrDefault(pp => pp.LanguageId == language)!.Id,
                     ListProductImage = p.ProductImages.Select(pi => new ProductImageDtos
                     {
                         Id = pi.Id,

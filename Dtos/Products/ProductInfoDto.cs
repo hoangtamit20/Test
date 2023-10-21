@@ -72,6 +72,10 @@ namespace serverapi.Dtos.Products
         /// <summary>
         /// 
         /// </summary>
+        public int ProductTranslationId { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public List<ProductImageDtos> ListProductImage { get; set; } = new List<ProductImageDtos>();
         /// <summary>
         /// 

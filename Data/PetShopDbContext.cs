@@ -138,6 +138,12 @@ namespace PetShop.Data
                 c.HasIndex(c => c.UserId).IsUnique();
             });
 
+            builder.Entity<ProductTranslation>(pp => 
+            {
+                pp.HasIndex(e => new { e.LanguageId, e.ProductId })
+                .IsUnique();
+            });
+
             foreach (var entityType in builder.Model.GetEntityTypes())
             {
                 var tableName = entityType.GetTableName();
@@ -145,7 +151,8 @@ namespace PetShop.Data
                 {
                     entityType.SetTableName(tableName.Substring(6));
                 }
-            }
+}
+
         }
 
         /// <summary>
@@ -154,8 +161,8 @@ namespace PetShop.Data
         /// <param name="optionsBuilder"></param>
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            base.OnConfiguring(optionsBuilder);
-        }
+{
+    base.OnConfiguring(optionsBuilder);
+}
     }
 }

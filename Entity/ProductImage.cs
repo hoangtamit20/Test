@@ -39,7 +39,7 @@ public partial class ProductImage
     /// 
     /// </summary>
     [Column(TypeName = "datetime")]
-    public DateTime DateCreated { get; set; }
+    public DateTime DateCreated { get; set; } = DateTime.Now;
 
     /// <summary>
     /// 

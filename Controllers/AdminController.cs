@@ -198,7 +198,7 @@ namespace serverapi.Controllers
                         if (createProductDto.ImageUrls is not null && createProductDto.ImageUrls.Count > 0)
                             createProductDto.ImageUrls.ForEach(image =>
                             {
-                                productImages.Add(new ProductImage() { ProductId = product.Id, ImagePath = image });
+                                productImages.Add(new ProductImage() { ProductId = product.Id, ImagePath = image, DateCreated = DateTime.Now });
                             });
                         _context.ProductImages.AddRange(productImages);
                         await _context.SaveChangesAsync();
@@ -236,28 +236,35 @@ namespace serverapi.Controllers
             {
                 if (productId != updateProductDto.Id)
                     return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Route id : {productId} not equal to ProductId {updateProductDto.Id}" } });
-                var productExsits = await _context.Products.FindAsync(updateProductDto.Id);
+                var productExsits = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == updateProductDto.Id);
                 if (productExsits is null)
                     return BadRequest(new BaseBadRequestResult() { Errors = new List<string>() { $"Product with Id {updateProductDto.Id} not found!" } });
                 var productTransExists = await _context.ProductTranslations
-                    .FirstOrDefaultAsync(pt =>
-                        pt.ProductId == productExsits.Id
-                        && pt.LanguageId == updateProductDto.LanguageId);
-                if (productTransExists is null)
-                {
-                    var proTrans = updateProductDto.Adapt<ProductTranslation>();
-                    proTrans.ProductId = productExsits.Id;
-                    _context.ProductTranslations.Add(proTrans);
-                }
-                else
-                {
-                    productTransExists = updateProductDto.Adapt<ProductTranslation>();
-                    _context.Entry<ProductTranslation>(productTransExists).State = EntityState.Modified;
-                }
-                productExsits = updateProductDto.Adapt<Product>();
-                _context.Entry<Product>(productExsits).State = EntityState.Modified;
+                    .FindAsync(updateProductDto.ProductTranslationId);
                 try
                 {
+                    if (productTransExists is null)
+                    {
+                        productTransExists = new ProductTranslation();
+                        productTransExists.Name = updateProductDto.Name ?? string.Empty;
+                        productTransExists.SeoAlias = updateProductDto.SeoAlias;
+                        productTransExists.SeoDescription = updateProductDto.SeoDescription;
+                        productTransExists.LanguageId = updateProductDto.LanguageId;
+                        productTransExists.ProductId = updateProductDto.Id;
+                        _context.ProductTranslations.Add(productTransExists);
+                    }
+                    else
+                    {
+                        productTransExists.Name = updateProductDto.Name ?? string.Empty;
+                        productTransExists.SeoAlias = updateProductDto.SeoAlias;
+                        productTransExists.SeoDescription = updateProductDto.SeoDescription;
+                        productTransExists.LanguageId = updateProductDto.LanguageId;
+                        productTransExists.ProductId = updateProductDto.Id;
+                        _context.Entry<ProductTranslation>(productTransExists).State = EntityState.Modified;
+                    }
+                    productExsits = updateProductDto.Adapt<Product>();
+                    _context.Entry<Product>(productExsits).State = EntityState.Modified;
+
                     await _context.SaveChangesAsync();
                     return NoContent();
                 }
@@ -464,6 +471,7 @@ namespace serverapi.Controllers
                     .Select(odl => new OrderDetailByOrderIdDto
                     {
                         ProductName = odl.Product.ProductTranslations.FirstOrDefault(pp => pp.ProductId == odl.ProductId)!.Name,
+                        ImagePath = odl.Product.Thumbnail,
                         ProductQuantity = odl.Quantity,
                         ProductPrice = odl.SubTotal / odl.Quantity,
                         SubTotal = odl.SubTotal
