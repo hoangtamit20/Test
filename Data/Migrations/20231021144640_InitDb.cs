@@ -108,15 +108,13 @@ namespace PetShop.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     FromDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     ToDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     ApplyForAll = table.Column<bool>(type: "bit", nullable: false),
-                    DiscountPercent = table.Column<int>(type: "int", nullable: true),
-                    DiscountAmount = table.Column<int>(type: "int", nullable: true),
-                    ProductIds = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
-                    ProductCategoryIds = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                    DiscountValue = table.Column<decimal>(type: "decimal(19,2)", nullable: false),
+                    DiscountType = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -179,6 +177,7 @@ namespace PetShop.Data.Migrations
                     ViewCount = table.Column<int>(type: "int", nullable: false),
                     DateCreated = table.Column<DateTime>(type: "datetime", nullable: false),
                     IsFeatured = table.Column<bool>(type: "bit", nullable: true),
+                    Thumbnail = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -218,6 +217,30 @@ namespace PetShop.Data.Migrations
                         name: "FK_CategoryTranslation_Language_LanguageId",
                         column: x => x.LanguageId,
                         principalTable: "Language",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PromotionCategory",
+                columns: table => new
+                {
+                    PromotionId = table.Column<int>(type: "int", nullable: false),
+                    CategoryId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PromotionCategory", x => new { x.PromotionId, x.CategoryId });
+                    table.ForeignKey(
+                        name: "FK_PromotionCategory_Category_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Category",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PromotionCategory_Promotion_PromotionId",
+                        column: x => x.PromotionId,
+                        principalTable: "Promotion",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -432,6 +455,30 @@ namespace PetShop.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PromotionProduct",
+                columns: table => new
+                {
+                    PromotionId = table.Column<int>(type: "int", nullable: false),
+                    ProductId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PromotionProduct", x => new { x.PromotionId, x.ProductId });
+                    table.ForeignKey(
+                        name: "FK_PromotionProduct_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PromotionProduct_Promotion_PromotionId",
+                        column: x => x.PromotionId,
+                        principalTable: "Promotion",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CartItems",
                 columns: table => new
                 {
@@ -492,14 +539,15 @@ namespace PetShop.Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     PaymentContent = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     PaymentCurrency = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
-                    PaymentRefId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     RequiredAmount = table.Column<decimal>(type: "decimal(19,2)", nullable: true),
-                    PaymentDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    PaymentDate = table.Column<DateTime>(type: "datetime", nullable: false),
                     ExpireDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     PaymentLanguage = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     PaidAmount = table.Column<decimal>(type: "decimal(19,2)", nullable: true),
                     PaymentStatus = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     PaymentLastMessage = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    LastUpdateAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastUpdateBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     MerchantId = table.Column<int>(type: "int", nullable: false),
                     PaymentDestinationId = table.Column<int>(type: "int", nullable: false),
                     OrderId = table.Column<int>(type: "int", nullable: false)
@@ -585,8 +633,8 @@ namespace PetShop.Data.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TranMessage = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    TranPayload = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    TranStatus = table.Column<int>(type: "int", maxLength: 10, nullable: false),
+                    TranPayload = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TranStatus = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     TranAmount = table.Column<decimal>(type: "decimal(19,2)", nullable: true),
                     TranDate = table.Column<DateTime>(type: "datetime", nullable: true),
                     PaymentId = table.Column<int>(type: "int", nullable: false)
@@ -694,6 +742,16 @@ namespace PetShop.Data.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PromotionCategory_CategoryId",
+                table: "PromotionCategory",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PromotionProduct_ProductId",
+                table: "PromotionProduct",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",
                 table: "RoleClaims",
                 column: "RoleId");
@@ -778,7 +836,10 @@ namespace PetShop.Data.Migrations
                 name: "ProductTranslation");
 
             migrationBuilder.DropTable(
-                name: "Promotion");
+                name: "PromotionCategory");
+
+            migrationBuilder.DropTable(
+                name: "PromotionProduct");
 
             migrationBuilder.DropTable(
                 name: "RoleClaims");
@@ -806,6 +867,9 @@ namespace PetShop.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Product");
+
+            migrationBuilder.DropTable(
+                name: "Promotion");
 
             migrationBuilder.DropTable(
                 name: "Roles");

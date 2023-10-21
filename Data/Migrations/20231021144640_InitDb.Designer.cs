@@ -12,8 +12,8 @@ using PetShop.Data;
 namespace PetShop.Data.Migrations
 {
     [DbContext(typeof(PetShopDbContext))]
-    [Migration("20231008121530_UpdateCategory")]
-    partial class UpdateCategory
+    [Migration("20231021144640_InitDb")]
+    partial class InitDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -542,6 +542,12 @@ namespace PetShop.Data.Migrations
                     b.Property<DateTime?>("ExpireDate")
                         .HasColumnType("datetime");
 
+                    b.Property<DateTime?>("LastUpdateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastUpdateBy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("MerchantId")
                         .HasColumnType("int");
 
@@ -559,7 +565,7 @@ namespace PetShop.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<DateTime?>("PaymentDate")
+                    b.Property<DateTime>("PaymentDate")
                         .HasColumnType("datetime");
 
                     b.Property<int>("PaymentDestinationId")
@@ -572,10 +578,6 @@ namespace PetShop.Data.Migrations
                     b.Property<string>("PaymentLastMessage")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("PaymentRefId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("PaymentStatus")
                         .HasMaxLength(20)
@@ -753,12 +755,11 @@ namespace PetShop.Data.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("TranPayload")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("TranStatus")
+                    b.Property<string>("TranStatus")
                         .HasMaxLength(10)
-                        .HasColumnType("int");
+                        .HasColumnType("nvarchar(10)");
 
                     b.HasKey("Id");
 
@@ -792,6 +793,10 @@ namespace PetShop.Data.Migrations
 
                     b.Property<int>("Stock")
                         .HasColumnType("int");
+
+                    b.Property<string>("Thumbnail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ViewCount")
                         .HasColumnType("int");
@@ -903,32 +908,22 @@ namespace PetShop.Data.Migrations
                     b.Property<bool>("ApplyForAll")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("DiscountAmount")
+                    b.Property<int>("DiscountType")
                         .HasColumnType("int");
 
-                    b.Property<int?>("DiscountPercent")
-                        .HasColumnType("int");
+                    b.Property<decimal>("DiscountValue")
+                        .HasColumnType("decimal(19, 2)");
 
                     b.Property<DateTime>("FromDate")
                         .HasColumnType("datetime");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("ProductCategoryIds")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
-
-                    b.Property<string>("ProductIds")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("ToDate")
                         .HasColumnType("datetime");
@@ -936,6 +931,36 @@ namespace PetShop.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Promotion");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.PromotionCategory", b =>
+                {
+                    b.Property<int>("PromotionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PromotionId", "CategoryId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("PromotionCategory");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.PromotionProduct", b =>
+                {
+                    b.Property<int>("PromotionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PromotionId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("PromotionProduct");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1178,6 +1203,44 @@ namespace PetShop.Data.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("serverapi.Entity.PromotionCategory", b =>
+                {
+                    b.HasOne("serverapi.Entity.Category", "Category")
+                        .WithMany("PromotionCategories")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("serverapi.Entity.Promotion", "Promotion")
+                        .WithMany("PromotionCategories")
+                        .HasForeignKey("PromotionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Promotion");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.PromotionProduct", b =>
+                {
+                    b.HasOne("serverapi.Entity.Product", "Product")
+                        .WithMany("PromotionProducts")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("serverapi.Entity.Promotion", "Promotion")
+                        .WithMany("PromotionProducts")
+                        .HasForeignKey("PromotionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Promotion");
+                });
+
             modelBuilder.Entity("serverapi.Entity.AppUser", b =>
                 {
                     b.Navigation("Carts");
@@ -1195,6 +1258,8 @@ namespace PetShop.Data.Migrations
                     b.Navigation("CategoryTranslations");
 
                     b.Navigation("Products");
+
+                    b.Navigation("PromotionCategories");
                 });
 
             modelBuilder.Entity("serverapi.Entity.Language", b =>
@@ -1241,6 +1306,15 @@ namespace PetShop.Data.Migrations
                     b.Navigation("ProductImages");
 
                     b.Navigation("ProductTranslations");
+
+                    b.Navigation("PromotionProducts");
+                });
+
+            modelBuilder.Entity("serverapi.Entity.Promotion", b =>
+                {
+                    b.Navigation("PromotionCategories");
+
+                    b.Navigation("PromotionProducts");
                 });
 #pragma warning restore 612, 618
         }

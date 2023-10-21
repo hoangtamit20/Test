@@ -887,10 +887,9 @@ namespace PetShop.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("LanguageId");
 
-                    b.HasIndex("LanguageId", "ProductId")
-                        .IsUnique();
+                    b.HasIndex("ProductId");
 
                     b.ToTable("ProductTranslation");
                 });
