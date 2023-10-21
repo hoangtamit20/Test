@@ -1,7 +1,6 @@
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using System.Web;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -507,6 +506,29 @@ namespace serverapi.Controllers
         //     return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
         // }
 
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+
+        [HttpGet]
+        [Route("{id}")]
+        [ProducesResponseType(typeof(BaseResultWithData<PaymentDto>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseBadRequestResult), (int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetPaymentById(int id)
+        {
+            var payment = await _context.Payments.FindAsync(id);
+            if (payment is null)
+                return NotFound(new BaseBadRequestResult() { Errors = new List<string>() { $"Payment with Id : {id} not found!" } });
+            return Ok(new BaseResultWithData<PaymentDto>()
+            {
+                Success = true,
+                Message = $"Get payment by id : {id}",
+                Data = payment.Adapt<PaymentDto>()
+            });
+        }
         private async Task<string> GetPaymentDestinationShortName(int paymentDesId)
             => (await _context.PaymentDestinations.FindAsync(paymentDesId))!.DesShortName!;
     }
