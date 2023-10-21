@@ -289,7 +289,7 @@ namespace PetShop.Controllers
                         // generate token
                         var tokenReset = await _userManager.GeneratePasswordResetTokenAsync(userExist);
                         // process send email service
-                        var uriBuilder = new UriBuilder("https://4f98-18-141-219-165.ngrok-free.app/update-password");
+                        var uriBuilder = new UriBuilder("http://localhost:3000/update-password");
                         var parameters = HttpUtility.ParseQueryString(string.Empty);
                         parameters["id"] = userExist.Id.ToString();
                         parameters["token"] = tokenReset;
